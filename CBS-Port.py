@@ -58,15 +58,25 @@ class TSNEgressPort:
     Abstracted as a component that processes logic in discrete steps (dt).
     """
 
-    def __init__(self, port_id, bandwidth_mbps=100):
+    def __init__(
+        self,
+        port_id,
+        bandwidth_mbps=100,
+        class_a_idle_fraction=0.5,
+        class_b_idle_fraction=0.5,
+    ):
         self.port_id = port_id
         self.bandwidth_bps = bandwidth_mbps * 1_000_000
 
+        class_a_idle_slope_bps = class_a_idle_fraction * self.bandwidth_bps
+        class_b_idle_slope_bps = class_b_idle_fraction * self.bandwidth_bps
+
         # Initialize the 3 required queues
-        # Note: In real scenarios, slopes come from switch_config.json
+        # Note: In real scenarios, slopes come from switch_config.json.
+        # For the simplified test-case setting, defaults are 0.5 for both A and B.
         self.queues = {
-            "A": CBSQueue("A", "CBS", 30_000_000, self.bandwidth_bps),  # 30% BW
-            "B": CBSQueue("B", "CBS", 20_000_000, self.bandwidth_bps),  # 20% BW
+            "A": CBSQueue("A", "CBS", class_a_idle_slope_bps, self.bandwidth_bps),
+            "B": CBSQueue("B", "CBS", class_b_idle_slope_bps, self.bandwidth_bps),
             "BE": CBSQueue("BE", "SP"),  # Best Effort
         }
 
