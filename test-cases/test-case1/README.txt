@@ -1,0 +1,1 @@
+WCRTs.csv contains the worst-case response times (WCRTs) of the AVB streams for the test case, computed assuming identical parameters for both Class A and Class B, with idleSlope and sendingSlope set to 0.5 for simplicity.
