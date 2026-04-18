@@ -1,0 +1,205 @@
+{
+  "delay_units": "MICRO_SECOND",
+  "general": {
+    "output_directory": "simulations_industrial",
+    "num_test_cases": 3,
+    "num_domains": 1,
+    "topology_size": {
+      "num_switches": 4,
+      "num_end_systems": 8,
+      "end_systems_per_switch": [0, 2]
+    },
+    "cross_domain_streams": 0,
+    "generate_routes": true,
+    "test_case_naming": "test_case_{}"
+  },
+  "network": {
+    "topology_type": "mesh_graph",
+    "parameters": "{ 'n': 2, 'm': 2}",
+    "default_bandwidth_mbps": 1000,
+    "constraints": {
+      "max_path_length": 5,
+      "min_redundant_paths": 2
+    }
+  },
+  "routing": {
+    "algorithm": "shortest_path",
+    "consider_link_utilization": true
+  },
+  "domain_connections": {
+    "type": "line",
+    "connections_per_domain_pair": 1
+  },
+  "traffic": {
+    "types": [
+          {
+            "name": "ISOCHRONOUS",
+            "PCP-list": [7],
+            "number": 3,
+            "redundant_number": 0,
+            "redundant_routes": 0,
+            "cycle_time": {
+              "cycle_time_units": "MICRO_SECOND",
+              "choose_list": true,
+              "cycle_time_list": [
+                  100,
+                500,
+                1000,
+                2000
+              ],
+              "min_cycle_time": 100,
+              "max_cycle_time": 2000
+            },
+            "min_delay": 100,
+            "max_delay": 2000,
+            "min_packet_size": 30,
+            "max_packet_size": 100,
+            "bidirectional": false
+          },
+          {
+            "name": "CYCLIC-SYNCHRONOUS",
+            "PCP-list": [6],
+            "number": 0,
+            "cycle_time": {
+              "cycle_time_units": "MICRO_SECOND",
+              "choose_list": true,
+              "cycle_time_list": [
+                500, 
+                1000
+              ],
+              "min_cycle_time": 500,
+              "max_cycle_time": 1000
+            },
+            "min_delay": 500,
+            "max_delay": 1000,
+            "min_packet_size": 50,
+            "max_packet_size": 1000,
+            "bidirectional": false
+          },
+          {
+            "name": "CYCLIC-ASYNCHRONOUS",
+            "PCP-list": [5],
+            "number": 0,
+            "cycle_time": {
+              "cycle_time_units": "MICRO_SECOND",
+              "choose_list": true,
+              "cycle_time_list": [
+                2000,
+                10000,
+                                20000
+              ],
+              "min_cycle_time": 2000,
+              "max_cycle_time": 20000
+            },
+            "min_delay": 2000,
+            "max_delay": 20000,
+            "min_packet_size": 50,
+            "max_packet_size": 1000,
+            "bidirectional": false
+          },
+          {
+            "name": "NETWORK-CONTROL",
+            "PCP-list": [4],
+            "number": 0,
+            "cycle_time": {
+              "cycle_time_units": "MICRO_SECOND",
+              "choose_list": true,
+              "cycle_time_list": [
+                50000,
+                100000,
+                500000,
+                1000000
+              ],
+              "min_cycle_time": 50000,
+              "max_cycle_time": 1000000
+            },
+            "min_delay": 50000,
+            "max_delay": 1000000,
+            "min_packet_size": 50,
+            "max_packet_size": 500,
+            "bidirectional": false
+          },
+          {
+            "name": "ALARMS-AND-EVENTS",
+            "PCP-list": [3],
+            "number": 0,
+            "cycle_time": {
+              "cycle_time_units": "MICRO_SECOND",
+              "choose_list": true,
+              "cycle_time_list": [
+                100000,
+                500000,
+                1000000
+              ],
+              "min_cycle_time": 100000,
+              "max_cycle_time": 1000000
+            },
+            "min_delay": 100000,
+            "max_delay": 1000000,
+            "min_packet_size": 50,
+            "max_packet_size": 1500,
+            "bidirectional": false
+          },
+          {
+            "name": "CONFIGURATION-AND-DIAGNOSTICS",
+            "PCP-list": [2],
+            "number": 0,
+            "cycle_time": {
+              "cycle_time_units": "MICRO_SECOND",
+              "choose_list": true,
+              "cycle_time_list": [
+                500000,
+                1000000,
+                1500000,
+                2000000
+              ],
+              "min_cycle_time": 500000,
+              "max_cycle_time": 2000000
+            },
+            "min_delay": 500000,
+            "max_delay": 2000000,
+            "min_packet_size": 500,
+            "max_packet_size": 1500,
+            "bidirectional": false
+          },
+          {
+            "name": "VIDEO",
+            "PCP-list": [1],
+            "number": 0,
+            "cycle_time": {
+              "cycle_time_units": "MICRO_SECOND",
+              "choose_list": true,
+              "cycle_time_list": [
+                                16700,
+                                33300
+                            ],
+              "min_cycle_time": 2000,
+              "max_cycle_time": 10000
+            },
+            "min_delay": 2000,
+            "max_delay": 10000,
+            "min_packet_size": 1000,
+            "max_packet_size": 1500,
+            "bidirectional": false
+          },
+          {
+            "name": "BEST-EFFORT",
+            "PCP-list": [0],
+            "number": 2,
+            "min_packet_size": 30,
+            "max_packet_size": 1500,
+            "bidirectional": false
+          },
+          {
+            "name": "AUDIO/VOICE",
+            "PCP-list": [0],
+            "number": 0,
+            "min_delay": 1,
+            "max_delay": 100000,
+            "min_packet_size": 1000,
+            "max_packet_size": 1500,
+            "bidirectional": false
+          }   
+        ]
+  }
+}

@@ -1,0 +1,205 @@
+{
+  "delay_units": "MICRO_SECOND",
+  "routes": [
+    {
+        "flow_id": 0,
+        "paths": [
+            [
+                {
+                    "node": "ES1",
+                    "port": 0
+                },
+                {
+                    "node": "SW1",
+                    "port": 6
+                },
+                {
+                    "node": "ES0",
+                    "port": 0
+                }
+            ]
+        ],
+        "min_e2e_delay": 4000.0
+    },
+    {
+        "flow_id": 1,
+        "paths": [
+            [
+                {
+                    "node": "ES0",
+                    "port": 0
+                },
+                {
+                    "node": "SW1",
+                    "port": 7
+                },
+                {
+                    "node": "ES1",
+                    "port": 0
+                }
+            ]
+        ],
+        "min_e2e_delay": 4000.0
+    },
+    {
+        "flow_id": 2,
+        "paths": [
+            [
+                {
+                    "node": "ES0",
+                    "port": 0
+                },
+                {
+                    "node": "SW1",
+                    "port": 7
+                },
+                {
+                    "node": "ES1",
+                    "port": 0
+                }
+            ]
+        ],
+        "min_e2e_delay": 4000.0
+    },
+    {
+        "flow_id": 3,
+        "paths": [
+            [
+                {
+                    "node": "ES1",
+                    "port": 0
+                },
+                {
+                    "node": "SW1",
+                    "port": 6
+                },
+                {
+                    "node": "ES0",
+                    "port": 0
+                }
+            ]
+        ],
+        "min_e2e_delay": 4000.0
+    },
+    {
+        "flow_id": 4,
+        "paths": [
+            [
+                {
+                    "node": "ES1",
+                    "port": 0
+                },
+                {
+                    "node": "SW1",
+                    "port": 6
+                },
+                {
+                    "node": "ES0",
+                    "port": 0
+                }
+            ]
+        ],
+        "min_e2e_delay": 2000.0
+    },
+    {
+        "flow_id": 5,
+        "paths": [
+            [
+                {
+                    "node": "ES0",
+                    "port": 0
+                },
+                {
+                    "node": "SW1",
+                    "port": 7
+                },
+                {
+                    "node": "ES1",
+                    "port": 0
+                }
+            ]
+        ],
+        "min_e2e_delay": 2000.0
+    },
+    {
+        "flow_id": 6,
+        "paths": [
+            [
+                {
+                    "node": "ES0",
+                    "port": 0
+                },
+                {
+                    "node": "SW1",
+                    "port": 7
+                },
+                {
+                    "node": "ES1",
+                    "port": 0
+                }
+            ]
+        ],
+        "min_e2e_delay": 2000.0
+    },
+    {
+        "flow_id": 7,
+        "paths": [
+            [
+                {
+                    "node": "ES1",
+                    "port": 0
+                },
+                {
+                    "node": "SW1",
+                    "port": 6
+                },
+                {
+                    "node": "ES0",
+                    "port": 0
+                }
+            ]
+        ],
+        "min_e2e_delay": 2000.0
+    },
+    {
+        "flow_id": 8,
+        "paths": [
+            [
+                {
+                    "node": "ES0",
+                    "port": 0
+                },
+                {
+                    "node": "SW1",
+                    "port": 7
+                },
+                {
+                    "node": "ES1",
+                    "port": 0
+                }
+            ]
+        ],
+        "min_e2e_delay": 2000.0
+    },
+    {
+        "flow_id": 9,
+        "paths": [
+            [
+                {
+                    "node": "ES1",
+                    "port": 0
+                },
+                {
+                    "node": "SW1",
+                    "port": 6
+                },
+                {
+                    "node": "ES0",
+                    "port": 0
+                }
+            ]
+        ],
+        "min_e2e_delay": 4000.0
+    }
+  ]
+}

@@ -1,0 +1,174 @@
+{
+    "delay_units": "MICRO_SECOND",
+    "general": {
+      "output_directory": "simulations_aerospace",
+      "num_test_cases": 5,
+      "num_domains": 2,
+      "topology_size": {
+        "num_switches": 5,
+        "num_end_systems": 10,
+        "end_systems_per_switch": [0, 2]
+      },
+      "cross_domain_streams": 0,
+      "generate_routes": true,
+      "test_case_naming": "test_case_{}"
+    },
+    "network": {
+      "topology_type": "mesh_graph",
+      "parameters": "{ 'n': 3, 'm': 3 }",
+      "default_bandwidth_mbps": 1000,
+      "constraints": {
+        "max_path_length": 3,
+        "min_redundant_paths": 2
+      }
+    },
+    "routing": {
+      "algorithm": "shortest_path",
+      "consider_link_utilization": true
+    },
+    "domain_connections": {
+      "type": "line",
+      "connections_per_domain_pair": 1
+    },
+    "traffic": {
+      "types": [
+        {
+          "name": "COMMAND-AND-CONTROL",
+          "PCP-list": [7],
+          "number": 1,
+          "cycle_time": {
+            "cycle_time_units": "MICRO_SECOND",
+            "choose_list": true,
+            "cycle_time_list": [500, 1000, 2000],
+            "min_cycle_time": 500,
+            "max_cycle_time": 2000
+          },
+          "min_delay": 500,
+          "max_delay": 2000,
+          "min_packet_size": 64,
+          "max_packet_size": 128,
+          "bidirectional": false
+        },
+        {
+          "name": "SYNC-PARAMETRIC",
+          "PCP-list": [6],
+          "number": 1,
+          "cycle_time": {
+            "cycle_time_units": "MICRO_SECOND",
+            "choose_list": true,
+            "cycle_time_list": [1000, 2000, 5000],
+            "min_cycle_time": 1000,
+            "max_cycle_time": 5000
+          },
+          "min_delay": 1000,
+          "max_delay": 5000,
+          "min_packet_size": 128,
+          "max_packet_size": 256,
+          "bidirectional": false
+        },
+        {
+          "name": "ASYNC-PARAMETRIC",
+          "PCP-list": [5],
+          "number": 1,
+          "cycle_time": {
+            "cycle_time_units": "MICRO_SECOND",
+            "choose_list": true,
+            "cycle_time_list": [2000, 5000, 10000],
+            "min_cycle_time": 2000,
+            "max_cycle_time": 10000
+          },
+          "min_delay": 2000,
+          "max_delay": 10000,
+          "min_packet_size": 128,
+          "max_packet_size": 512,
+          "bidirectional": false
+        },
+        {
+          "name": "VIDEO",
+          "PCP-list": [4],
+          "number": 1,
+          "cycle_time": {
+            "cycle_time_units": "MICRO_SECOND",
+            "choose_list": true,
+            "cycle_time_list": [20000, 40000, 60000],
+            "min_cycle_time": 20000,
+            "max_cycle_time": 60000
+          },
+          "min_delay": 20000,
+          "max_delay": 60000,
+          "min_packet_size": 1000,
+          "max_packet_size": 1500,
+          "bidirectional": false
+        },
+        {
+          "name": "AUDIO",
+          "PCP-list": [3],
+          "number": 1,
+          "cycle_time": {
+            "cycle_time_units": "MICRO_SECOND",
+            "choose_list": true,
+            "cycle_time_list": [1000, 2000, 3000],
+            "min_cycle_time": 1000,
+            "max_cycle_time": 3000
+          },
+          "min_delay": 1000,
+          "max_delay": 3000,
+          "min_packet_size": 256,
+          "max_packet_size": 512,
+          "bidirectional": false
+        },
+        {
+          "name": "MAINTENANCE",
+          "PCP-list": [2],
+          "number": 1,
+          "cycle_time": {
+            "cycle_time_units": "MICRO_SECOND",
+            "choose_list": true,
+            "cycle_time_list": [500000, 1000000, 1500000],
+            "min_cycle_time": 500000,
+            "max_cycle_time": 1500000
+          },
+          "min_delay": 500000,
+          "max_delay": 1500000,
+          "min_packet_size": 64,
+          "max_packet_size": 1500,
+          "bidirectional": false
+        },
+        {
+          "name": "FILE-TRANSFER",
+          "PCP-list": [1],
+          "number": 1,
+          "cycle_time": {
+            "cycle_time_units": "MICRO_SECOND",
+            "choose_list": true,
+            "cycle_time_list": [1000000, 2000000, 5000000],
+            "min_cycle_time": 1000000,
+            "max_cycle_time": 5000000
+          },
+          "min_delay": 1000000,
+          "max_delay": 5000000,
+          "min_packet_size": 1500,
+          "max_packet_size": 9000,
+          "bidirectional": false
+        },
+        {
+          "name": "NETWORK-CONTROL",
+          "PCP-list": [0],
+          "number": 1,
+          "cycle_time": {
+            "cycle_time_units": "MICRO_SECOND",
+            "choose_list": true,
+            "cycle_time_list": [50000, 100000, 500000, 1000000],
+            "min_cycle_time": 50000,
+            "max_cycle_time": 1000000
+          },
+          "min_delay": 50000,
+          "max_delay": 1000000,
+          "min_packet_size": 50,
+          "max_packet_size": 500,
+          "bidirectional": false
+        }
+      ]
+    }
+  }
+  

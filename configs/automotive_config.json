@@ -1,0 +1,114 @@
+{
+    "delay_units": "MICRO_SECOND",
+    "general": {
+      "output_directory": "simulations_automotive",
+      "num_test_cases": 3,
+      "num_domains": 1,
+      "topology_size": {
+        "num_switches": 10,
+        "num_end_systems": 20,
+        "end_systems_per_switch": [0, 4]
+      },
+      "cross_domain_streams": 0,
+      "generate_routes": true,
+      "test_case_naming": "test_case_{}"
+    },
+    "network": {
+      "topology_type": "mesh_graph",
+      "parameters": "{ 'n': 4, 'm': 4 }",
+      "default_bandwidth_mbps": 1000,
+      "constraints": {
+        "max_path_length": 5,
+        "min_redundant_paths": 2
+      }
+    },
+    "routing": {
+      "algorithm": "shortest_path",
+      "consider_link_utilization": true
+    },
+    "domain_connections": {
+      "type": "line",
+      "connections_per_domain_pair": 2
+    },
+    "traffic": {
+      "types": [
+        {
+          "name": "CYCLIC-SCHEDULED",
+          "PCP-list": [7],
+          "number": 1,
+          "cycle_time": {
+            "cycle_time_units": "MICRO_SECOND",
+            "choose_list": true,
+            "cycle_time_list": [1000, 5000, 10000, 500000],
+            "min_cycle_time": 1000,
+            "max_cycle_time": 500000
+          },
+          "min_delay": 1000,
+          "max_delay": 500000,
+          "min_packet_size": 50,
+          "max_packet_size": 150,
+          "bidirectional": false
+        },
+        {
+          "name": "HIGH-RESOLUTION-SENSOR",
+          "PCP-list": [6],
+          "number": 2,
+          "cycle_time": {
+            "cycle_time_units": "MICRO_SECOND",
+            "choose_list": true,
+            "cycle_time_list": [50, 100],
+            "min_cycle_time": 50,
+            "max_cycle_time": 100
+          },
+          "min_delay": 50,
+          "max_delay": 100,
+          "min_packet_size": 1400,
+          "max_packet_size": 1500,
+          "bidirectional": false
+        },
+        {
+          "name": "ACOUSTIC-SENSOR",
+          "PCP-list": [5],
+          "number": 1,
+          "cycle_time": {
+            "cycle_time_units": "MICRO_SECOND",
+            "choose_list": true,
+            "cycle_time_list": [20, 25],
+            "min_cycle_time": 20,
+            "max_cycle_time": 25
+          },
+          "min_delay": 20,
+          "max_delay": 25,
+          "min_packet_size": 20,
+          "max_packet_size": 50,
+          "bidirectional": false
+        },
+        {
+          "name": "FLEXRAY",
+          "PCP-list": [4],
+          "number": 1,
+          "cycle_time": {
+            "cycle_time_units": "MICRO_SECOND",
+            "choose_list": true,
+            "cycle_time_list": [50, 100],
+            "min_cycle_time": 50,
+            "max_cycle_time": 100
+          },
+          "min_delay": 50,
+          "max_delay": 100,
+          "min_packet_size": 50,
+          "max_packet_size": 200,
+          "bidirectional": false
+        },
+        {
+          "name": "BEST-EFFORT",
+          "PCP-list": [0],
+          "number": 1,
+          "min_packet_size": 30,
+          "max_packet_size": 1500,
+          "bidirectional": false
+        }
+      ]
+    }
+  }
+  
