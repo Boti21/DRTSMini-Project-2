@@ -1,4 +1,4 @@
-from parser import Link_DataClass
+from parser import LinkDataClass
 from CBSPort import TSNFrame
 
 
@@ -6,7 +6,7 @@ class Link:
     receiving_queue = list[tuple[TSNFrame, float]]  # Queue of (frame, arrival_time)
     current_time: float = 0.0
 
-    def __init__(self, link_data: Link_DataClass):
+    def __init__(self, link_data: LinkDataClass):
         self.id = link_data.id
         self.source = link_data.source
         self.destination = link_data.destination
