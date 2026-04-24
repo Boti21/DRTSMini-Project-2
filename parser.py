@@ -21,13 +21,13 @@ class Stream:
     redundancy: int
 
 @dataclass 
-class Switch: 
+class Switch_DataClass: 
     id: str 
     ports: int
     domain: int
 
 @dataclass 
-class Link: 
+class Link_DataClass: 
     id: str
     source: str
     destination: str
