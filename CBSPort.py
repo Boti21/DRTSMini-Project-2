@@ -143,6 +143,10 @@ class TSNEgressPort:
                     self.bandwidth_bps / 1_000_000
                 )
 
+        self.link.receive_frame(finished_frame) if finished_frame else None
+        
+        if finished_frame:
+            print(f"Finished frame transmitted through link: {finished_frame} at time {self.link.current_time}")
         return finished_frame
 
 
@@ -165,22 +169,19 @@ if __name__ == "__main__":
         port_id=1,
         bandwidth_mbps=topology.default_bandwidth_mbps,
     )
+
+    link_data = topology.links[0]  # Just take the first link for this example
+    my_link = Link(link_data)
+    my_port.add_link(my_link)
     global_time = 0.0
     tick_size = 1.0  # 1 microsecond steps
 
     # This will have to be handled by the main simulator also!!!
     frames = []
     for stream in streams.values():
-        frame = TSNStream(
-            stream_id=stream.id,
-            name=stream.name,
-            source=stream.source,
-            destinations=stream.destinations,
-            type=stream.stream_type,
-            pcp=stream.pcp,
-            size_bytes=stream.size,
-            period=stream.period,
-            redundancy=stream.redundancy,
+        frame = TSNFrame(
+            stream=stream,  
+            arrival_time=0,  # This will be set to the global time when the frame is sent to the port
         )
         frames.append(frame)
 
