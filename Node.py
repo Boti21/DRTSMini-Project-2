@@ -1,5 +1,7 @@
-from CBSPort import TSNEgressPort, TSNFrame
+from CBSPort import TSNEgressPort
+from TSNStream import TSNFrame
 import abc
+
 
 class NodeType:
     END_DEVICE = "End Device"
@@ -21,7 +23,6 @@ class Node:
         self.id = id
         self.domain = domain
         self.ports = {i: TSNEgressPort(i) for i in range(ports)}
-        self.links = {}
         self.receive_queue = []
 
     def receive_frame(self, frame: TSNFrame, egress_port_id: int):

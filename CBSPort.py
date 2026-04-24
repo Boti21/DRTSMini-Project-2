@@ -1,36 +1,9 @@
 import collections
-import json
 import os
+from Link import Link
+from TSNStream import TSNStream, TSNFrame
 
-class TSNFrame:
-    """Represents a single message instance (packet) in the network."""
-
-    def __init__(
-        self,
-        stream_id,
-        name,
-        source,
-        destinations,
-        type,
-        pcp,
-        size_bytes,
-        period,
-        redundancy=0,
-    ):
-        self.stream_id = stream_id
-        self.name = name
-        self.source = source
-        self.destinations = destinations
-        self.type = type
-        self.pcp = pcp
-        self.size_bytes = size_bytes
-        self.period = period  # Units specified by "delay_units" in streams.json
-        self.redundancy = redundancy  # Number of redundant copies (for reliability)
-        self.arrival_time = 0  # Time reached current switch
-        self.hop_index = 0  # Track progress along route
-
-    def __repr__(self):
-        return f"Frame Stream:{self.stream_id} PCP:{self.pcp} Size:{self.size_bytes}B"
+from parser import load_streams, load_topology
 
 
 class CBSQueue:
@@ -58,12 +31,17 @@ class TSNEgressPort:
     Abstracted as a component that processes logic in discrete steps (dt).
     """
 
+    link: Link = (
+        None  # This will be set by the main simulator when connecting the port to a link
+    )
+
     def __init__(
         self,
         port_id,
         bandwidth_mbps=100,
         class_a_idle_fraction=0.5,
         class_b_idle_fraction=0.5,
+        link=None,
     ):
         self.port_id = port_id
         self.bandwidth_bps = bandwidth_mbps * 1_000_000
@@ -98,6 +76,10 @@ class TSNEgressPort:
         target_queue = self.pcp_to_queue.get(frame.pcp, "BE")
 
         self.queues[target_queue].buffer.append(frame)
+
+    def add_link(self, link: Link):
+        """Associate a Link with this port for frame delivery."""
+        self.link = link
 
     def step(self, dt):
         """
@@ -167,39 +149,51 @@ class TSNEgressPort:
 # --- SIMULATOR EXAMPLE ---
 
 if __name__ == "__main__":
+    # Resolve the test-case folder naming used in this repo.
+    candidate_dirs = ["test_cases/test_case_1"]
+    test_case_dir = next((d for d in candidate_dirs if os.path.isdir(d)), None)
+    if test_case_dir is None:
+        raise FileNotFoundError(
+            "Could not find a test case directory. Tried: " + ", ".join(candidate_dirs)
+        )
+
+    streams = load_streams(os.path.join(test_case_dir, "streams.json"))
+    topology = load_topology(os.path.join(test_case_dir, "topology.json"))
+
     # 1. Setup Port - This will have to be handled by the main simulator!!!
-    my_port = TSNEgressPort(port_id=1, bandwidth_mbps=100)
-    global_time = 0.0 
+    my_port = TSNEgressPort(
+        port_id=1,
+        bandwidth_mbps=topology.default_bandwidth_mbps,
+    )
+    global_time = 0.0
     tick_size = 1.0  # 1 microsecond steps
 
-    # Load test case 1 streams.json and create TSNFrame objects
-    with open("test-cases/test-case1/streams.json", "r") as f:
-        streams_data = json.load(f)
-    
     # This will have to be handled by the main simulator also!!!
     frames = []
-    for stream in streams_data["streams"]:
-        frame = TSNFrame(
-            stream_id=stream["id"],
-            name=stream["name"],
-            source=stream["source"],
-            destinations=stream["destinations"],
-            type=stream["type"],
-            pcp=stream["PCP"],
-            size_bytes=stream["size"],
-            period=stream["period"],
-            redundancy=stream["redundancy"]
+    for stream in streams.values():
+        frame = TSNStream(
+            stream_id=stream.id,
+            name=stream.name,
+            source=stream.source,
+            destinations=stream.destinations,
+            type=stream.stream_type,
+            pcp=stream.pcp,
+            size_bytes=stream.size,
+            period=stream.period,
+            redundancy=stream.redundancy,
         )
         frames.append(frame)
-    
+
     for frame in frames:
         print(frame)
-        my_port.receive_frame(frame, global_time) # In this implementation, a frame's arrival_time member is set to the global time (simulates simulator's time)
-                                                  # This way, we can then simply compare the simulation time after processing the frame and get the "local" time spent in the port.
-                                                  # I could add this time to the end-to-end delay if the main simulator provides it to me, otherwise, I can return this local time 
-                                                  # and let the simulator handle it.
+        my_port.receive_frame(
+            frame, global_time
+        )  # In this implementation, a frame's arrival_time member is set to the global time (simulates simulator's time)
+        # This way, we can then simply compare the simulation time after processing the frame and get the "local" time spent in the port.
+        # I could add this time to the end-to-end delay if the main simulator provides it to me, otherwise, I can return this local time
+        # and let the simulator handle it.
 
-    for _ in range(3000000): 
+    for _ in range(3000000):
         out = my_port.step(tick_size)
         if out:
             delay = global_time - out.arrival_time
