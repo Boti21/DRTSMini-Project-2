@@ -4,16 +4,16 @@ import json
 from typing import Dict, List
 
 @dataclass 
-class Destination:
+class DestinationDataclass:
     id: str
     deadline: int
     
 @dataclass 
-class Stream:
+class StreamDataclass:
     id: int
     name: str
     source: str
-    destinations:List[Destination]
+    destinations:List[DestinationDataclass]
     stream_type: str 
     pcp: int
     size: int
@@ -21,13 +21,13 @@ class Stream:
     redundancy: int
 
 @dataclass 
-class Switch_DataClass: 
+class SwitchDataclass: 
     id: str 
     ports: int
     domain: int
 
 @dataclass 
-class Link_DataClass: 
+class LinkDataclass: 
     id: str
     source: str
     destination: str
@@ -38,42 +38,42 @@ class Link_DataClass:
     delay: int
 
 @dataclass
-class EndSystem:
+class EndSystemDataclass:
     id: str
     domain: int
 
 @dataclass
-class Topology:
-    switches: List[Switch]
-    end_systems: List[EndSystem]
-    links: List[Link]
+class TopologyDataclass:
+    switches: List[SwitchDataclass]
+    end_systems: List[EndSystemDataclass]
+    links: List[LinkDataclass]
     default_bandwidth_mbps: float
     delay_units: str
 
 @dataclass
-class Path:
+class PathDataclass:
     node: str
     port: int
 
 
 @dataclass
-class Route:
+class RouteDataclass:
     flow_id: int
-    paths: List[List[Path]]
+    paths: List[List[PathDataclass]]
     min_e2e_delay_us: float    
 
-def load_streams(path: str) -> Dict[int, Stream]:
+def load_streams(path: str) -> Dict[int, StreamDataclass]:
     with open(path, "r", encoding="utf-8") as f:
         raw = json.load(f)
 
     streams = {}
     for s in raw["streams"]:
         destinations = [
-            Destination(id=d["id"], deadline=d["deadline"])
+            DestinationDataclass(id=d["id"], deadline=d["deadline"])
             for d in s["destinations"]
         ]
 
-        stream = Stream(
+        stream = StreamDataclass(
             id=s["id"],
             name=s["name"],
             source=s["source"],
@@ -89,7 +89,7 @@ def load_streams(path: str) -> Dict[int, Stream]:
     return streams
 
 
-def load_routes(path: str) -> Dict[int, Route]:
+def load_routes(path: str) -> Dict[int, RouteDataclass]:
     with open(path, "r", encoding="utf-8") as f:
         raw = json.load(f)
 
@@ -97,10 +97,10 @@ def load_routes(path: str) -> Dict[int, Route]:
     for r in raw["routes"]:
         parsed_paths = []
         for path_nodes in r["paths"]:
-            hops = [Path(node=h["node"], port=h["port"]) for h in path_nodes]
+            hops = [PathDataclass(node=h["node"], port=h["port"]) for h in path_nodes]
             parsed_paths.append(hops)
 
-        route = Route(
+        route = RouteDataclass(
             flow_id=r["flow_id"],
             paths=parsed_paths,
             min_e2e_delay_us=r["min_e2e_delay"],
@@ -110,15 +110,15 @@ def load_routes(path: str) -> Dict[int, Route]:
     return routes
 
 
-def load_topology(path: str) -> Topology:
+def load_topology(path: str) -> TopologyDataclass:
     with open(path, "r", encoding="utf-8") as f:
         raw = json.load(f)["topology"]
 
-    switches = [Switch(**sw) for sw in raw["switches"]]
-    end_systems = [EndSystem(**es) for es in raw["end_systems"]]
+    switches = [SwitchDataclass(**sw) for sw in raw["switches"]]
+    end_systems = [EndSystemDataclass(**es) for es in raw["end_systems"]]
 
     links = [
-        Link(
+        LinkDataclass(
             id=l["id"],
             source=l["source"],
             destination=l["destination"],
@@ -131,7 +131,7 @@ def load_topology(path: str) -> Topology:
         for l in raw["links"]
     ]
 
-    return Topology(
+    return TopologyDataclass(
         switches=switches,
         end_systems=end_systems,
         links=links,
