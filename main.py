@@ -2,6 +2,7 @@ import parser
 import func
 from Node import Switch, EndDevice
 from TSNStream import TSNStream
+from Link import Link
 
 
 nodes = []
@@ -20,6 +21,12 @@ def get_node(nodes: list, node_id: str) -> Switch | EndDevice:
         if node.id == node_id:
             return node
     raise ValueError(f"Node with id {node_id} not found")
+
+def get_link(links: list, link_id: str) -> Link:
+    for link in links:
+        if link.id == link_id:
+            return link
+    raise ValueError(f"Link with id {link_id} not found")
 
 
 if __name__ == "__main__":
@@ -41,6 +48,9 @@ if __name__ == "__main__":
 
     for i in test_case.streams:
         streams.append(TSNStream(test_case.streams[i]))
+
+    for link in test_case.topology.links:
+        links.append(Link(link))
 
 
     while global_time < MAX_SIMULATION_TIME_US:
