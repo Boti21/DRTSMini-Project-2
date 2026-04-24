@@ -62,6 +62,7 @@ class RouteDataclass:
     paths: List[List[PathDataclass]]
     min_e2e_delay_us: float    
 
+
 def load_streams(path: str) -> Dict[int, StreamDataclass]:
     with open(path, "r", encoding="utf-8") as f:
         raw = json.load(f)
@@ -85,7 +86,6 @@ def load_streams(path: str) -> Dict[int, StreamDataclass]:
             redundancy=s["redundancy"],
         )
         streams[stream.id] = stream
-
     return streams
 
 

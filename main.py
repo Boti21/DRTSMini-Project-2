@@ -39,8 +39,8 @@ if __name__ == "__main__":
     for node in test_case.topology.end_systems:
         nodes.append(EndDevice(id=node.id, domain=node.domain))
 
-    for stream in test_case.streams:
-        streams.append(TSNStream(stream))
+    for i in test_case.streams:
+        streams.append(TSNStream(test_case.streams[i]))
 
 
     while global_time < MAX_SIMULATION_TIME_US:
