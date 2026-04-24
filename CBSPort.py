@@ -1,5 +1,6 @@
 import collections
 import os
+from Link import Link
 from TSNStream import TSNStream, TSNFrame
 
 from parser import load_streams, load_topology
@@ -29,6 +30,10 @@ class TSNEgressPort:
     The Egress Port Module.
     Abstracted as a component that processes logic in discrete steps (dt).
     """
+
+    link: Link = (
+        None  # This will be set by the main simulator when connecting the port to a link
+    )
 
     def __init__(
         self,
@@ -71,6 +76,10 @@ class TSNEgressPort:
         target_queue = self.pcp_to_queue.get(frame.pcp, "BE")
 
         self.queues[target_queue].buffer.append(frame)
+
+    def add_link(self, link: Link):
+        """Associate a Link with this port for frame delivery."""
+        self.link = link
 
     def step(self, dt):
         """
