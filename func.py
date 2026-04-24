@@ -2,14 +2,14 @@ from dataclasses import dataclass
 from pathlib import Path as FilePath
 from typing import Dict, List, Tuple
 
-from parser import Link, Path, Route, Stream, Topology, load_routes, load_streams, load_topology
+from parser import LinkDataclass, PathDataclass, RouteDataclass, StreamDataclass, TopologyDataclass, load_routes, load_streams, load_topology
 
 
 @dataclass
 class TestCase:
-    streams: Dict[int, Stream]
-    routes: Dict[int, Route]
-    topology: Topology
+    streams: Dict[int, StreamDataclass]
+    routes: Dict[int, RouteDataclass]
+    topology: TopologyDataclass
 
 
 def load_test_case(folder_path: str | FilePath) -> TestCase:
@@ -26,7 +26,7 @@ def load_test_case(folder_path: str | FilePath) -> TestCase:
     )
 
 
-def build_link_index(topology: Topology):
+def build_link_index(topology: TopologyDataclass):
     index = {}
 
     for link in topology.links:
@@ -35,7 +35,7 @@ def build_link_index(topology: Topology):
 
     return index
 
-def route_path_to_links(path: List[Path], link_index) -> List[Link]:
+def route_path_to_links(path: List[PathDataclass], link_index) -> List[LinkDataclass]:
     links = []
 
     for i in range(len(path) - 1):
@@ -109,7 +109,7 @@ def validate_test_case(test_case: TestCase) -> None:
                         )
 
 
-def get_stream_links(test_case: TestCase, stream_id: int) -> List[Link]:
+def get_stream_links(test_case: TestCase, stream_id: int) -> List[LinkDataclass]:
     if stream_id not in test_case.streams:
         raise ValueError(f"Unknown stream id {stream_id}")
 
@@ -148,3 +148,9 @@ if __name__ == "__main__":
             f"period={stream.period}us | "
             f"links={[link.id for link in route_links]}"
         )
+
+
+
+    print("Links:")
+    for link in test_case.topology.links:
+        print(f"  {link.id}: {link.source}:{link.sourcePort} -> {link.destination}:{link.destinationPort}")
