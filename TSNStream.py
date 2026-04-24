@@ -1,17 +1,17 @@
-from parser import StreamDataClass
+from parser import StreamDataclass
 
 
 class TSNStream:
     """Represents a single stream in the network."""
 
-    def __init__(self, stream: StreamDataClass):
-        self.stream_id = stream.stream_id
+    def __init__(self, stream: StreamDataclass):
+        self.stream_id = stream.id
         self.name = stream.name
         self.source = stream.source
         self.destinations = stream.destinations
-        self.type = stream.type
+        self.type = stream.stream_type
         self.pcp = stream.pcp
-        self.size_bytes = stream.size_bytes
+        self.size_bytes = stream.size
         self.period = stream.period  # Units specified by "delay_units" in streams.json
         self.redundancy = (
             stream.redundancy
@@ -32,14 +32,14 @@ class TSNStream:
 class TSNFrame:
     """Represents a single message instance (packet) in the network."""
 
-    def __init__(self, stream: StreamDataClass, arrival_time: float):
-        self.stream_id = stream.stream_id
+    def __init__(self, stream: StreamDataclass, arrival_time: float):
+        self.stream_id = stream.id
         self.name = stream.name
         self.source = stream.source
         self.destinations = stream.destinations
-        self.type = stream.type
+        self.type = stream.stream_type
         self.pcp = stream.pcp
-        self.size_bytes = stream.size_bytes
+        self.size_bytes = stream.size
         self.redundancy = (
             stream.redundancy
         )  # Number of redundant copies (for reliability)
