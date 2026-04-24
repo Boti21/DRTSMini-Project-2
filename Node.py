@@ -1,4 +1,5 @@
-from CBSPort import TSNEgressPort, TSNFrame
+from CBSPort import TSNEgressPort
+from TSNStream import TSNFrame
 import abc
 
 

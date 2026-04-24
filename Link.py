@@ -1,5 +1,5 @@
 from parser import LinkDataClass
-from CBSPort import TSNFrame
+from TSNStream import TSNFrame
 
 
 class Link:
