@@ -20,7 +20,8 @@ class TSNStream:
         self.hop_index = 0  # Track progress along route
 
     def step(self, global_time: float):
-        frame = TSNFrame(self, global_time)
+        if global_time % self.period == 0:
+            frame = TSNFrame(self, global_time)
         ######
         ##### ADD LOOKUP TABLE LOGIC
         ######
