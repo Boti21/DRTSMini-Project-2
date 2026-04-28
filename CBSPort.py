@@ -143,12 +143,15 @@ class TSNEgressPort:
                     self.bandwidth_bps / 1_000_000
                 )
 
-        self.link.receive_frame(finished_frame) if finished_frame else None
-        
         if finished_frame:
-            print(f"Finished frame transmitted through link: {finished_frame} at time {self.link.current_time}")
-        return finished_frame
-
+            if self.link:
+                self.link.receive_frame(finished_frame)
+                print(f"Finished frame transmitted through link: {finished_frame}")
+            else:
+                # Visualization mode (no link attached)
+                pass
+                # Optional debug:
+                # print(f"Finished frame (no link): {finished_frame}")
 
 # --- SIMULATOR EXAMPLE ---
 
