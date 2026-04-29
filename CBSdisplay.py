@@ -1,4 +1,5 @@
 import os
+import sys
 import matplotlib.pyplot as plt
 from matplotlib.patches import Patch, Rectangle
 
@@ -47,7 +48,7 @@ class CBSVisualizer:
         )
 
         # -----------------------
-        # 1. CREDIT EVOLUTION (UNCHANGED — your favorite part)
+        # 1. CREDIT EVOLUTION
         # -----------------------
         axs[0].plot(self.time, self.credit_A, label="Class A Credit")
         axs[0].plot(self.time, self.credit_B, label="Class B Credit")
@@ -57,9 +58,9 @@ class CBSVisualizer:
         axs[0].grid()
 
         color_map = {
-        "A": "blue",
-        "B": "orange",
-        "BE": "purple"
+            "A": "blue",
+            "B": "orange",
+            "BE": "purple"
         }
 
         ax = axs[1]
@@ -69,17 +70,13 @@ class CBSVisualizer:
 
         start_time = self.time[0]
         current_state = self.trace[0]
-
         interval_start = start_time
 
         for i in range(1, len(self.time)):
-
             state = self.trace[i]
             t = self.time[i]
 
-            # state change → close previous interval
             if state != current_state:
-
                 ax.add_patch(
                     Rectangle(
                         (interval_start, -1),
@@ -89,7 +86,6 @@ class CBSVisualizer:
                         linewidth=0
                     )
                 )
-
                 interval_start = t
                 current_state = state
 
@@ -109,7 +105,7 @@ class CBSVisualizer:
         ax.set_yticks([])
         ax.set_xlabel("Time (µs)")
         ax.set_title("CBS Transmission Timeline")
-    
+
         legend = [
             Patch(facecolor="blue", label="Class A"),
             Patch(facecolor="orange", label="Class B"),
@@ -125,13 +121,25 @@ class CBSVisualizer:
 
 if __name__ == "__main__":
 
-    test_case_dir = "test_cases/test_case_1"
+    # Argument handling (sys)
+    if len(sys.argv) != 2:
+        print("Usage: python CBSdisplay.py <test_case_1>")
+        sys.exit(1)
 
+    test_case = sys.argv[1]
+    test_case_dir = os.path.join("test_cases", test_case)
+
+    if not os.path.exists(test_case_dir):
+        print(f"Error: '{test_case}' does not exist.")
+        print("Available options: test_case_1, test_case_2, test_case_3")
+        sys.exit(1)
+
+
+    # Load data
     streams = load_streams(os.path.join(test_case_dir, "streams.json"))
     topology = load_topology(os.path.join(test_case_dir, "topology.json"))
 
     port = TSNEgressPort(port_id=6, bandwidth_mbps=100)
-
     visualizer = CBSVisualizer()
 
     global_time = 0.0
@@ -140,36 +148,24 @@ if __name__ == "__main__":
 
     next_release = {s.id: 0 for s in streams.values()}
 
-    print("Starting CBS simulation...")
+    print(f"Starting CBS simulation with {test_case}...")
 
+    # Simulation loop
     while global_time < SIM_TIME:
 
-        # -----------------------
-        # Traffic generation
-        # -----------------------
         for s in streams.values():
             if global_time >= next_release[s.id]:
-
                 frame = TSNFrame(
                     stream=s,
                     arrival_time=global_time
                 )
-
                 port.receive_frame(frame, global_time)
                 next_release[s.id] += s.period
 
-        # -----------------------
-        # Step CBS port
-        # -----------------------
         port.step(dt)
-
-        # -----------------------
-        # Record state
-        # -----------------------
         visualizer.record(port, global_time)
 
         global_time += dt
 
     print("Simulation finished. Plotting...")
-
     visualizer.plot()
