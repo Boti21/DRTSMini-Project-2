@@ -75,6 +75,9 @@ class EndDevice(Node):
             self.ports[0].receive_frame(frame, 0)  # 0 as arrival time for simplicity
         self.send_queue.clear()
 
+    def get_wcrts(self) -> dict[int, float]:
+        return self.wcrts
+
 
 if __name__ == "__main__":
     # Example usage
