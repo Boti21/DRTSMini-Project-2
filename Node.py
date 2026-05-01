@@ -53,12 +53,6 @@ class EndDevice(Node):
         self.type = NodeType.END_DEVICE
         self.send_queue = []  # Queue of frames to send
 
-    def step(self, global_time: float):
-        # Implement end device logic to process frames and update state
-        for egress_port_id, frame in self.receive_queue:
-            print(f"End Device {self.id} received frame: {frame} at time {global_time}")
-        self.receive_queue.clear()
-
     def send_frame(self, frame: TSNFrame):
         self.send_queue.append(frame)
 
