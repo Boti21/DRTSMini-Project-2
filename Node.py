@@ -46,15 +46,34 @@ class Switch(Node):
 
 
 class EndDevice(Node):
+    wcrts = dict[int, float]  # Worst-case response times for each stream ID
+
     def __init__(self, id: str, domain: int, ports: int = 4):
         super().__init__(id, domain, ports)
         self.type = NodeType.END_DEVICE
+        self.send_queue = []  # Queue of frames to send
 
     def step(self, global_time: float):
         # Implement end device logic to process frames and update state
         for egress_port_id, frame in self.receive_queue:
             print(f"End Device {self.id} received frame: {frame} at time {global_time}")
         self.receive_queue.clear()
+
+    def send_frame(self, frame: TSNFrame):
+        self.send_queue.append(frame)
+
+    def step(self, global_time: float):
+        # Implement end device logic to process frames and update state
+        for egress_port_id, frame in self.receive_queue:
+            print(f"End Device {self.id} received frame: {frame} at time {global_time}")
+            self.wcrts[frame.stream.id] = global_time - frame.arrival_time
+        self.receive_queue.clear()
+
+        # Process frames in the send queue
+        for frame in self.send_queue:
+            print(f"End Device {self.id} sending frame: {frame} at time {global_time}")
+            self.ports[0].receive_frame(frame, 0)  # 0 as arrival time for simplicity
+        self.send_queue.clear()
 
 
 if __name__ == "__main__":
