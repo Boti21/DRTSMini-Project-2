@@ -1,5 +1,5 @@
 from CBSPort import TSNEgressPort
-from TSNStream import TSNFrame
+from TSNStream import TSNFrame, TSNStream
 
 from parser import DestinationDataclass, StreamDataclass
 
@@ -88,8 +88,9 @@ if __name__ == "__main__":
         period=1000,
         redundancy=1,
     )
+    stream = TSNStream(stream_dataclass)
     frame = TSNFrame(
-        stream=stream_dataclass,  # This would be a StreamDataclass instance in a real implementation
+        stream=stream,
         arrival_time=0,
     )
 
