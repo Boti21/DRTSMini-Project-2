@@ -33,14 +33,14 @@ class TSNStream:
 class TSNFrame:
     """Represents a single message instance (packet) in the network."""
 
-    def __init__(self, stream: StreamDataclass, arrival_time: float):
-        self.stream_id = stream.id
+    def __init__(self, stream: TSNStream, arrival_time: float):
+        self.stream_id = stream.stream_id
         self.name = stream.name
         self.source = stream.source
         self.destinations = stream.destinations
-        self.type = stream.stream_type
+        self.type = stream.type
         self.pcp = stream.pcp
-        self.size_bytes = stream.size
+        self.size_bytes = stream.size_bytes
         self.redundancy = (
             stream.redundancy
         )  # Number of redundant copies (for reliability)
