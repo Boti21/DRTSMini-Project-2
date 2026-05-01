@@ -6,6 +6,7 @@ from matplotlib.patches import Patch, Rectangle
 from parser import load_streams, load_topology
 from TSNStream import TSNFrame
 from CBSPort import TSNEgressPort
+from TSNStream import TSNStream
 
 
 # ---------------- VISUALIZER ---------------- #
@@ -154,13 +155,14 @@ if __name__ == "__main__":
     while global_time < SIM_TIME:
 
         for s in streams.values():
-            if global_time >= next_release[s.id]:
+            s = TSNStream(s)
+            if global_time >= next_release[s.stream_id]:
                 frame = TSNFrame(
                     stream=s,
                     arrival_time=global_time
                 )
                 port.receive_frame(frame, global_time)
-                next_release[s.id] += s.period
+                next_release[s.stream_id] += s.period
 
         port.step(dt)
         visualizer.record(port, global_time)
