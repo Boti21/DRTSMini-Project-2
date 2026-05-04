@@ -1,11 +1,13 @@
 from parser import LinkDataclass, StreamDataclass
 from TSNStream import TSNFrame
+from scipy import stats
+from math import ceil
 
 
 class Link:
     current_time: float = 0.0
 
-    def __init__(self, link_data: LinkDataclass):
+    def __init__(self, link_data: LinkDataclass, use_random_delay: bool = False):
         self.id = link_data.id
         self.source = link_data.source
         self.destination = link_data.destination
@@ -14,6 +16,7 @@ class Link:
         self.domain = link_data.domain
         self.bandwidth_mbps = link_data.bandwidth_mbps
         self.delay = link_data.delay
+        self.use_random_delay = use_random_delay
         self.receiving_queue = list[tuple[TSNFrame, float]]()
 
     def receive_frame(self, frame: TSNFrame):
@@ -24,13 +27,20 @@ class Link:
         # Check if any frames have completed their transmission delay
         self.current_time = global_time
         for frame, arrival_time in self.receiving_queue:
-            if self.current_time - arrival_time >= self.delay:
+            if self.current_time - arrival_time >= self.get_delay():
                 # Frame has reached the destination
                 ##########
                 ##### ADD LOGIC FOR LOOKUP TABLE
                 ###########
                 print(f"Link {self.id} delivered frame: {frame} at time {global_time}")
                 self.receiving_queue.remove((frame, arrival_time))
+
+    def get_delay(self) -> int:
+        if not self.use_random_delay:
+            return self.delay
+        mean = self.delay
+        std_dev = self.delay / 3  # 99.7% of values within [0, 2*delay]
+        return ceil(stats.norm.rvs(loc=mean, scale=std_dev))
 
 
 if __name__ == "__main__":
