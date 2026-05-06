@@ -3,31 +3,7 @@ import func
 from Node import Switch, EndDevice
 from TSNStream import TSNStream
 from Link import Link
-
-
-nodes = []
-streams =[]
-links = []
-
-# for now these are here
-def get_stream(streams: list, stream_id: int) -> TSNStream:
-    for stream in streams:
-        if stream.stream_id == stream_id:
-            return stream
-    raise ValueError(f"Stream with id {stream_id} not found")
-        
-def get_node(nodes: list, node_id: str) -> Switch | EndDevice:
-    for node in nodes:
-        if node.id == node_id:
-            return node
-    raise ValueError(f"Node with id {node_id} not found")
-
-def get_link(links: list, link_id: str) -> Link:
-    for link in links:
-        if link.id == link_id:
-            return link
-    raise ValueError(f"Link with id {link_id} not found")
-
+from lookup_tables import get_stream, get_node, get_link, links, nodes, streams
 
 if __name__ == "__main__":
 
@@ -35,7 +11,7 @@ if __name__ == "__main__":
 
     func.validate_test_case(test_case)
 
-    print(test_case)
+    # print(test_case)
 
     MAX_SIMULATION_TIME_US = 1_000_000.0 # 1 second in microseconds
     global_time = 0.0 # us
@@ -51,6 +27,19 @@ if __name__ == "__main__":
 
     for link in test_case.topology.links:
         links.append(Link(link))
+    
+    for i in range(len(links)):
+        print(f"i: {i}")
+        print(f"{links[i].id} | {links[i].source_port} -> {links[i].destination_port} | {links[i].source} -> {links[i].destination} | delay={links[i].delay}us")
+
+        source_node = get_node(links[i].source)
+
+        if(source_node.type == "End Device"):
+            print(f"Source node {links[i].source} is an End Device")
+        else:
+            print(f"Source node {links[i].source} is a Switch")
+            source_node.ports[links[i].source_port].add_link(links[i])
+            print(f"Source node: {source_node.id} | n ports: {len(source_node.ports)}")
 
 
     while global_time < MAX_SIMULATION_TIME_US:

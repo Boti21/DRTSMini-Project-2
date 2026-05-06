@@ -7,6 +7,7 @@ from parser import load_streams, load_topology
 from TSNStream import TSNFrame
 from CBSPort import TSNEgressPort
 from TSNStream import TSNStream
+from lookup_tables import get_stream, get_node, get_link
 
 
 # ---------------- VISUALIZER ---------------- #

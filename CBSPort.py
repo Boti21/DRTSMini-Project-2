@@ -2,6 +2,7 @@ import collections
 import os
 from Link import Link
 from TSNStream import TSNStream, TSNFrame
+from lookup_tables import get_stream, get_node, get_link
 
 from parser import load_streams, load_topology
 

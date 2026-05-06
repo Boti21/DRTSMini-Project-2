@@ -1,5 +1,6 @@
 from CBSPort import TSNEgressPort
 from TSNStream import TSNFrame, TSNStream
+from lookup_tables import get_stream, get_node, get_link
 
 from parser import DestinationDataclass, StreamDataclass
 
@@ -80,7 +81,8 @@ class EndDevice(Node):
     ):
         super().__init__(id, domain, ports, add_delay_to_wcrt, delay)
         self.type = NodeType.END_DEVICE
-        self.send_queue = list[tuple[TSNFrame, float]]  # Queue of frames to send
+        # self.send_queue = list[tuple[TSNFrame, float]]  # Queue of frames to send
+        self.send_queue: list[tuple[TSNFrame, float]] = []  # Queue of frames to send
 
     def send_frame(self, frame: TSNFrame):
         self.send_queue.append((frame, self.current_time))

@@ -2,6 +2,7 @@ from parser import LinkDataclass, StreamDataclass
 from TSNStream import TSNFrame
 from scipy import stats
 from math import ceil
+from lookup_tables import get_stream, get_node, get_link
 
 
 class Link:
