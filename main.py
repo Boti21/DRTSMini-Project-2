@@ -49,9 +49,11 @@ if __name__ == "__main__":
 
 
     analizer = Analyzer()
-    for stream in streams:
-        analizer.wcrt_cal(route=nodes, stream=stream)
-        print(f"Analysis complete. WCRT: {analizer.wcrt}")
+    analizer.analyze_all(routes=routes, streams=streams)
+    print(f"Analysis complete")
+    for i, wcrt in analizer.wcrts.items():
+        print(f"WCRT for stream {i}: {wcrt}")
+
 
     while global_time < MAX_SIMULATION_TIME_US:
 
