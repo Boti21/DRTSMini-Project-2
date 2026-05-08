@@ -49,19 +49,28 @@ class Analyzer:
 
 
     def hpi_calc(self, port: TSNEgressPort, stream: TSNStream): # Higher priority interference
-        # if stream.pcp == 1: # AVB class A
-        #     return 0
-        if stream.pcp == 2: # AVB class B
-            # return self.lpi_calc(port=port, stream=stream) * port.idle_slope/port.send_slope + port.link.delay*(len(port.queues["A"]) - 1)
+        if stream.pcp == 1: # AVB class B
             queue = port.queues["A"]
             return self.lpi_calc(port=port, stream=stream) * queue.idle_slope/queue.send_slope + self.max_transmission_time(port=port, queue=queue, ignore_id=stream.stream_id)
-        return 0 # Best Effort queue not taken into account
+        elif stream.pcp == 0: # BE
+            queue = port.queues["B"]
+            hpi = self.lpi_calc(port=port, stream=stream) * queue.idle_slope/queue.send_slope + self.max_transmission_time(port=port, queue=queue, ignore_id=stream.stream_id)
+            queue = port.queues["A"]
+            hpi += self.lpi_calc(port=port, stream=stream) * queue.idle_slope/queue.send_slope + self.max_transmission_time(port=port, queue=queue, ignore_id=stream.stream_id)
+            return hpi
+        return 0 # If PCP is 2 then there's no higher priority interference
 
     def lpi_calc(self, port, stream): # Lower priority interference
-        if stream.pcp == 1:
+        if stream.pcp == 2: # AVB class A
             queue = port.queues["B"]
+            lpi = self.max_transmission_time(port=port, queue=queue, ignore_id=stream.stream_id)
+            queue = port.queues["BE"]
+            lpi += self.max_transmission_time(port=port, queue=queue, ignore_id=stream.stream_id)
+            return lpi
+        elif stream.pcp == 1: # AVB class B
+            queue = port.queues["BE"]
             return self.max_transmission_time(port=port, queue=queue, ignore_id=stream.stream_id)
-        return 0 # Best Effort queue not taken into account
+        return 0 # If PCP is 0 then there's no lower priority interference
 
     def max_transmission_time(self, port: TSNEgressPort, queue: CBSQueue, ignore_id: int):
         max = 0
