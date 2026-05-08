@@ -1,5 +1,5 @@
 from parser import LinkDataclass, StreamDataclass
-from TSNStream import TSNFrame
+from TSNStream import TSNFrame, TSNStream
 from scipy import stats
 from math import ceil
 from lookup_tables import get_stream, get_node, get_link
@@ -29,7 +29,8 @@ class Link:
         self.current_time = global_time
         for frame, arrival_time in self.receiving_queue:
             if self.current_time - arrival_time >= self.get_delay():
-                get_node(self.destination).receive_frame(frame, self.destination_port)
+                node = get_node(self.destination)
+                node.receive_frame(frame, self.destination_port)
                 print(
                     f"Link {self.id} delivered frame: {frame} to {self.destination} at time {global_time}"
                 )
@@ -68,7 +69,7 @@ if __name__ == "__main__":
         redundancy=0,
     )
     frame = TSNFrame(
-        stream=stream_data,  # This would be a StreamDataclass instance in a real scenario
+        stream=TSNStream(stream_data),  # This would be a StreamDataclass instance in a real scenario
         arrival_time=0,
     )
     link.receive_frame(frame)

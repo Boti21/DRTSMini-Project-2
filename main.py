@@ -14,7 +14,7 @@ if __name__ == "__main__":
     # print(test_case)
 
     # MAX_SIMULATION_TIME_US = 1_000_000.0 # 1 second in microseconds
-    MAX_SIMULATION_TIME_US = 10.0
+    MAX_SIMULATION_TIME_US = 1000.0
     global_time = 0.0 # us
 
     # List to make them iterable
@@ -37,6 +37,7 @@ if __name__ == "__main__":
 
         if(source_node.type == "End Device"):
             print(f"Source node {links[i].source} is an End Device")
+            source_node.ports[links[i].source_port].add_link(links[i])
         else:
             print(f"Source node {links[i].source} is a Switch")
             source_node.ports[links[i].source_port].add_link(links[i])
@@ -49,7 +50,7 @@ if __name__ == "__main__":
         for node in nodes:
             node.step(global_time)
             for port in node.ports:
-                node.ports[port].step(global_time)
+                node.ports[port].step(1)
         for stream in streams:
             stream.step(global_time)
 

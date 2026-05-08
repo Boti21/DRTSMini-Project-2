@@ -87,6 +87,7 @@ class TSNEgressPort:
         The main simulation tick.
         dt = time increment in microseconds.
         """
+        # print(f"Port {self.port_id} stepping")
         finished_frame = None
 
         # 1. Update Link Progress
@@ -184,7 +185,8 @@ if __name__ == "__main__":
     frames = []
     for stream in streams.values():
         frame = TSNFrame(
-            stream=stream,  
+            # stream=stream,  
+            stream = TSNStream(stream),  # Convert StreamDataclass to TSNStream
             arrival_time=0,  # This will be set to the global time when the frame is sent to the port
         )
         frames.append(frame)

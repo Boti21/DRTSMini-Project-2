@@ -37,7 +37,7 @@ class Node:
         self.receive_queue.append((egress_port_id, frame, self.current_time))
 
     def step(self, global_time: float):
-        print(f"Node {self.id} stepping at time {global_time}")
+        # print(f"Node {self.id} stepping at time {global_time}")
         self.current_time = global_time
 
 
@@ -54,7 +54,7 @@ class Switch(Node):
         self.type = NodeType.SWITCH
 
     def step(self, global_time: float):
-        print(f"Node {self.id} stepping at time {global_time}")
+        # print(f"Node {self.id} stepping at time {global_time}")
         # Implement switch logic to process frames and update state
         self.current_time = global_time
         for egress_port_id, frame, arrival_time in self.receive_queue:
@@ -90,7 +90,7 @@ class EndDevice(Node):
         self.send_queue.append((frame, self.current_time))
 
     def step(self, global_time: float):
-        print(f"Node {self.id} stepping at time {global_time}")
+        # print(f"Node {self.id} stepping at time {global_time}")
         # Implement end device logic to process frames and update state
         self.current_time = global_time
         for egress_port_id, frame, arrival_time in self.receive_queue:
