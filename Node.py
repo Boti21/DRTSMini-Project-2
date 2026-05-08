@@ -23,7 +23,7 @@ class Node:
         domain: int,
         ports: int = 4,
         add_delay_to_wcrt: bool = False,
-        delay: int = 0,
+        delay: int = 10,
     ):
         self.id = id
         self.domain = domain
