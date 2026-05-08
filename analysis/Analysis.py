@@ -28,11 +28,13 @@ class Analyzer:
         for path in route.paths: # We only have one path for now
             for node in path:
                 port = get_node(node.node).ports[node.port]
+                serialization_delay = stream.size_bytes*8 / (port.link.bandwidth_mbps * 1e6) * 1e6 # μs
+                propagation_delay = port.link.delay
                 wcrt += self.spi_calc(port, stream) + \
-                            self.hpi_calc(port, stream) + \
-                            self.lpi_calc(port, stream) + \
-                            port.link.delay * stream.size_bytes/port.link.bandwidth_mbps
-                            # port.link.delay # göh?
+                        self.hpi_calc(port, stream) + \
+                        self.lpi_calc(port, stream) + \
+                        propagation_delay + \
+                        serialization_delay
         return wcrt
 
     def spi_calc(self, port: TSNEgressPort, stream: TSNStream): # Same priority interference
@@ -47,22 +49,24 @@ class Analyzer:
 
         for frame in queue.buffer:
             if frame.stream_id == stream.stream_id: continue
-            spi += port.link.delay*frame.size/port.link.bandwidth_mbps * (1 + queue.send_slope/queue.idle_slope)
+            spi += frame.size_bytes*8/port.link.bandwidth_mbps * (1 + abs(queue.send_slope)/queue.idle_slope)
 
         return spi
-
-        # return (len(queue.buffer)-1) * port.link.delay * (len(queue)-1) * (1 + queue.send_slope/queue.idle_slope) # len(queue)-1 because the frame itself is not counted
-
 
     def hpi_calc(self, port: TSNEgressPort, stream: TSNStream): # Higher priority interference
         if stream.pcp == 1: # AVB class B
             queue = port.queues["A"]
-            return self.lpi_calc(port=port, stream=stream) * queue.idle_slope/queue.send_slope + self.max_transmission_time(port=port, queue=queue, ignore_id=stream.stream_id)
+            L_max = self.max_transmission_time(port=port, queue=queue, ignore_id=stream.stream_id)
+            credit_recovery = (abs(queue.send_slope) / queue.idle_slope) * L_max
+            return credit_recovery + L_max
+
         elif stream.pcp == 0: # BE
-            queue = port.queues["B"]
-            hpi = self.lpi_calc(port=port, stream=stream) * queue.idle_slope/queue.send_slope + self.max_transmission_time(port=port, queue=queue, ignore_id=stream.stream_id)
-            queue = port.queues["A"]
-            hpi += self.lpi_calc(port=port, stream=stream) * queue.idle_slope/queue.send_slope + self.max_transmission_time(port=port, queue=queue, ignore_id=stream.stream_id)
+            hpi = 0
+            for key in ["A", "B"]:
+                queue = port.queues[key]
+                L_max = self.max_transmission_time(port=port, queue=queue, ignore_id=stream.stream_id)
+                credit_recovery = (abs(queue.send_slope) / queue.idle_slope) * L_max
+                hpi += credit_recovery + L_max
             return hpi
         return 0 # If PCP is 2 then there's no higher priority interference
 
@@ -82,6 +86,6 @@ class Analyzer:
         max = 0
         for frame in queue.buffer:
             if frame.stream_id == ignore_id: continue
-            val = port.link.delay*frame.size/port.link.bandwidth_mbps
+            val = port.link.delay*frame.size_bytes*8/(port.link.bandwidth_mbps*1e6) * 1e6 # μs
             if val > max: max = val
         return max
