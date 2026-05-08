@@ -4,6 +4,7 @@ from Node import Switch, EndDevice
 from TSNStream import TSNStream
 from Link import Link
 from lookup_tables import get_stream, get_node, get_link, links, nodes, streams
+from analysis.Analysis import Analyzer
 
 if __name__ == "__main__":
 
@@ -42,6 +43,9 @@ if __name__ == "__main__":
             source_node.ports[links[i].source_port].add_link(links[i])
             print(f"Source node: {source_node.id} | n ports: {len(source_node.ports)}")
 
+    analizer = Analyzer()
+    analizer.wcrt_cal(route=nodes, stream=streams[0])
+    print(f"Analysis complete. WCRT: {analizer.wcrt}")
 
     while global_time < MAX_SIMULATION_TIME_US:
 
