@@ -73,7 +73,7 @@ class TSNEgressPort:
 
     def receive_frame(self, frame, current_time):
         """Called by the Switch/Global Sim when a frame arrives at this port."""
-        frame.arrival_time = current_time
+        # frame.arrival_time = current_time
         target_queue = self.pcp_to_queue.get(frame.pcp, "BE")
 
         self.queues[target_queue].buffer.append(frame)

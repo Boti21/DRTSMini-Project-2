@@ -1,0 +1,29 @@
+{
+    "topology": {
+        "delay_units": "MICRO_SECOND",
+        "default_bandwidth_mbps": 100,
+        "switches": [],
+        "end_systems": [
+            {
+                "id": "ES0",
+                "domain": 0
+            },
+            {
+                "id": "ES1",
+                "domain": 0
+            }
+        ],
+        "links": [
+            {
+                "id": "Link0",
+                "source": "ES0",
+                "destination": "ES1",
+                "sourcePort": 0,
+                "destinationPort": 0,
+                "domain": 0,
+                "bandwidth_mbps": 100,
+                "delay": 10
+            }
+        ]
+    }
+}

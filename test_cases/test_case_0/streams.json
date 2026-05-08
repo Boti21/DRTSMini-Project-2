@@ -1,0 +1,37 @@
+{
+    "delay_units": "MICRO_SECOND",
+    "streams": [
+        {
+            "id": 0,
+            "name": "Stream0",
+            "source": "ES0",
+            "destinations": [
+                {
+                    "id": "ES1",
+                    "deadline": 1000
+                }
+            ],
+            "type": "ISOCHRONOUS",
+            "PCP": 2,
+            "size": 1,
+            "period": 1000,
+            "redundancy": 0
+        },
+        {
+            "id": 1,
+            "name": "Stream1",
+            "source": "ES0",
+            "destinations": [
+                {
+                    "id": "ES1",
+                    "deadline": 1000
+                }
+            ],
+            "type": "ISOCHRONOUS",
+            "PCP": 2,
+            "size": 1,
+            "period": 1000,
+            "redundancy": 0
+        }
+    ]
+}

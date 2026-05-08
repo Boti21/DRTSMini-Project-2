@@ -1,4 +1,5 @@
 import parser
+import random
 import func
 from Node import Switch, EndDevice
 from TSNStream import TSNStream
@@ -8,18 +9,18 @@ from analysis.Analysis import Analyzer
 
 if __name__ == "__main__":
 
-    test_case = func.load_test_case("test_cases/test_case_1")
+    test_case = func.load_test_case("test_cases/test_case_0")
 
-    routes = func.load_routes("test_cases/test_case_1/routes.json")
+    routes = func.load_routes("test_cases/test_case_0/routes.json")
 
     func.validate_test_case(test_case)
 
     # print(test_case)
 
     # MAX_SIMULATION_TIME_US = 1_000_000.0 # 1 second in microseconds
-    MAX_SIMULATION_TIME_US = 10_000.0
+    MAX_SIMULATION_TIME_US = 1_000.0
     # MAX_SIMULATION_TIME_US = 1_000.0
-    global_time = 0.0 # us
+    global_time = 0.0  # us
 
     # List to make them iterable
     for node in test_case.topology.switches:
@@ -32,14 +33,16 @@ if __name__ == "__main__":
 
     for link in test_case.topology.links:
         links.append(Link(link))
-    
+
     for i in range(len(links)):
         print(f"i: {i}")
-        print(f"{links[i].id} | {links[i].source_port} -> {links[i].destination_port} | {links[i].source} -> {links[i].destination} | delay={links[i].delay}us")
+        print(
+            f"{links[i].id} | {links[i].source_port} -> {links[i].destination_port} | {links[i].source} -> {links[i].destination} | delay={links[i].delay}us"
+        )
 
         source_node = get_node(links[i].source)
 
-        if(source_node.type == "End Device"):
+        if source_node.type == "End Device":
             print(f"Source node {links[i].source} is an End Device")
             source_node.ports[links[i].source_port].add_link(links[i])
         else:
@@ -47,29 +50,37 @@ if __name__ == "__main__":
             source_node.ports[links[i].source_port].add_link(links[i])
             print(f"Source node: {source_node.id} | n ports: {len(source_node.ports)}")
 
-
     analizer = Analyzer()
     analizer.analyze_all(routes=routes, streams=streams)
     print(f"Analysis complete")
     for i, wcrt in analizer.wcrts.items():
         print(f"WCRT for stream {i}: {wcrt}")
 
+    wcrts = {}
+    for i in range(1000):
+        while global_time < MAX_SIMULATION_TIME_US:
 
-    while global_time < MAX_SIMULATION_TIME_US:
+            # Stepping objects
+            for node in nodes:
+                node.step(global_time)
+                for port in node.ports:
+                    node.ports[port].step(1)
+            permuted_streams = list(streams)
+            random.shuffle(permuted_streams)
+            for stream in permuted_streams:
+                stream.step(global_time)
+            for link in links:
+                link.step(global_time)
 
-        # Stepping objects
-        for node in nodes:
-            node.step(global_time)
-            for port in node.ports:
-                node.ports[port].step(1)
-        for stream in streams:
-            stream.step(global_time)
-        for link in links:
-            link.step(global_time)
+            global_time += 1  # Advance by 1 us
+            pass
 
-
-        global_time += 1 # Advance by 1 us
-        pass
+        for end_device in nodes:
+            if end_device.type == "End Device":
+                for stream_id, wcrt in end_device.wcrts.items():
+                    if stream_id not in wcrts:
+                        wcrts[stream_id] = 0
+                    wcrts[stream_id] = max(wcrts[stream_id], wcrt)
 
     print("Simulation finished")
 
@@ -77,9 +88,7 @@ if __name__ == "__main__":
 
     print("Worst-case response times:")
 
-    for end_device in nodes:
-        if end_device.type == "End Device":
-            for stream_id, wcrt in end_device.wcrts.items():
-                print(f"Stream {stream_id}: {wcrt} us")
+    for stream_id, wcrt in wcrts.items():
+        print(f"Stream {stream_id}: {wcrt} us")
 
     pass
