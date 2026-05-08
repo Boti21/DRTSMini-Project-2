@@ -58,14 +58,12 @@ class Switch(Node):
         # Implement switch logic to process frames and update state
         self.current_time = global_time
         for egress_port_id, frame, arrival_time in self.receive_queue:
-            print(f"Switch {self.id} received frame: {frame} at time {global_time}")
+            # print(f"Switch {self.id} received frame: {frame} at time {global_time}")
             if (
                 not (self.add_delay_to_wcrt)
                 or self.current_time - arrival_time >= self.delay
             ):
-                print(
-                    f"Switch {self.id} processing frame: {frame} at time {global_time}"
-                )
+                # print( f"Switch {self.id} processing frame: {frame} at time {global_time}")
                 self.ports[egress_port_id].receive_frame(frame, global_time)
                 self.receive_queue.remove((egress_port_id, frame, arrival_time))
 
@@ -95,7 +93,7 @@ class EndDevice(Node):
         # Implement end device logic to process frames and update state
         self.current_time = global_time
         for egress_port_id, frame, arrival_time in self.receive_queue:
-            print(f"End Device {self.id} received frame: {frame} at time {global_time}")
+            # print(f"End Device {self.id} received frame: {frame} at time {global_time}")
             self.wcrts[frame.stream_id] = arrival_time - frame.arrival_time
         self.receive_queue.clear()
 
@@ -105,9 +103,7 @@ class EndDevice(Node):
                 not (self.add_delay_to_wcrt)
                 or self.current_time - arrival_time >= self.delay
             ):
-                print(
-                    f"End Device {self.id} sending frame: {frame} at time {global_time}"
-                )
+                # print( f"End Device {self.id} sending frame: {frame} at time {global_time}")
                 self.ports[0].receive_frame(
                     frame, global_time
                 )  # Assuming port 0 is used for sending

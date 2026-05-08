@@ -21,7 +21,7 @@ class Link:
         self.receiving_queue = list[tuple[TSNFrame, float]]()
 
     def receive_frame(self, frame: TSNFrame):
-        print(f"Link {self.id} received frame: {frame} at time {self.current_time}")
+        # print(f"Link {self.id} received frame: {frame} at time {self.current_time}")
         self.receiving_queue.append((frame, self.current_time))
 
     def step(self, global_time: float):
@@ -31,9 +31,7 @@ class Link:
             if self.current_time - arrival_time >= self.get_delay():
                 node = get_node(self.destination)
                 node.receive_frame(frame, self.destination_port)
-                print(
-                    f"Link {self.id} delivered frame: {frame} to {self.destination} at time {global_time}"
-                )
+                # print(f"Link {self.id} delivered frame: {frame} to {self.destination} at time {global_time}")
                 self.receiving_queue.remove((frame, arrival_time))
 
     def get_delay(self) -> int:

@@ -10,6 +10,8 @@ if __name__ == "__main__":
 
     test_case = func.load_test_case("test_cases/test_case_1")
 
+    routes = func.load_routes("test_cases/test_case_1/routes.json")
+
     func.validate_test_case(test_case)
 
     # print(test_case)
@@ -45,9 +47,11 @@ if __name__ == "__main__":
             source_node.ports[links[i].source_port].add_link(links[i])
             print(f"Source node: {source_node.id} | n ports: {len(source_node.ports)}")
 
+
     analizer = Analyzer()
-    analizer.wcrt_cal(route=nodes, stream=streams[0])
-    print(f"Analysis complete. WCRT: {analizer.wcrt}")
+    for stream in streams:
+        analizer.wcrt_cal(route=nodes, stream=stream)
+        print(f"Analysis complete. WCRT: {analizer.wcrt}")
 
     while global_time < MAX_SIMULATION_TIME_US:
 
