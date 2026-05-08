@@ -1,4 +1,5 @@
 from parser import StreamDataclass
+from lookup_tables import get_stream, get_node, get_link, nodes
 
 
 class TSNStream:
@@ -25,6 +26,10 @@ class TSNStream:
         ######
         ##### ADD LOOKUP TABLE LOGIC
         ######
+            for node in nodes:
+                if node.type == "End Device" and node.id == self.source:
+                    print(f"Stream {self.stream_id} generated frame: {frame} at time {global_time}")
+                    node.send_frame(frame)
 
     def __repr__(self):
         return f"Frame Stream:{self.stream_id} PCP:{self.pcp} Size:{self.size_bytes}B"

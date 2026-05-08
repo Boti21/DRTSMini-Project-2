@@ -13,7 +13,8 @@ if __name__ == "__main__":
 
     # print(test_case)
 
-    MAX_SIMULATION_TIME_US = 1_000_000.0 # 1 second in microseconds
+    # MAX_SIMULATION_TIME_US = 1_000_000.0 # 1 second in microseconds
+    MAX_SIMULATION_TIME_US = 10.0
     global_time = 0.0 # us
 
     # List to make them iterable
@@ -47,6 +48,8 @@ if __name__ == "__main__":
         # Stepping objects
         for node in nodes:
             node.step(global_time)
+            for port in node.ports:
+                node.ports[port].step(global_time)
         for stream in streams:
             stream.step(global_time)
 
@@ -54,5 +57,6 @@ if __name__ == "__main__":
         global_time += 1 # Advance by 1 us
         pass
 
+    print("Simulation finished")
 
     pass
