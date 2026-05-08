@@ -29,11 +29,10 @@ class Link:
         self.current_time = global_time
         for frame, arrival_time in self.receiving_queue:
             if self.current_time - arrival_time >= self.get_delay():
-                # Frame has reached the destination
-                ##########
-                ##### ADD LOGIC FOR LOOKUP TABLE
-                ###########
-                print(f"Link {self.id} delivered frame: {frame} at time {global_time}")
+                get_node(self.destination).receive_frame(frame, self.destination_port)
+                print(
+                    f"Link {self.id} delivered frame: {frame} to {self.destination} at time {global_time}"
+                )
                 self.receiving_queue.remove((frame, arrival_time))
 
     def get_delay(self) -> int:
