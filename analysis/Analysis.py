@@ -11,21 +11,22 @@ from CBSPort import *
 from TSNStream import *
 from Node import *
 from Link import *
+from parser import *
 
 class Analyzer:
-    def __init__(self, route: list[Node], stream: TSNStream):
+    def __init__(self):
         self.wcrt = 0
-        return self.wcrt_cal(route=route, stream=stream)
 
     def wcrt_cal(self, route: list[Node], stream: TSNStream):
         for node in route:
             for _, port in node.ports.items():
-                if port.port_id == 0: # Only receiving
+                if port.port_id == 0 or port.link == None: # Only receiving or port link does not exist
                     continue
                 self.wcrt += self.spi_calc(port, stream) + \
                              self.hpi_calc(port, stream) + \
                              self.lpi_calc(port, stream) + \
-                             port.link.delay # göh?
+                             port.link.delay * stream.size_bytes/port.link.bandwidth_mbps
+                             # port.link.delay # göh?
         return self.wcrt
 
     def spi_calc(self, port: TSNEgressPort, stream: TSNStream): # Same priority interference
