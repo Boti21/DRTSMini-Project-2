@@ -95,7 +95,7 @@ class EndDevice(Node):
         self.current_time = global_time
         for egress_port_id, frame, arrival_time in self.receive_queue:
             print(f"End Device {self.id} received frame: {frame} at time {global_time}")
-            self.wcrts[frame.stream.id] = global_time - arrival_time
+            self.wcrts[frame.stream.id] = max(self.wcrts.get(frame.stream.id, 0), global_time - arrival_time)
         self.receive_queue.clear()
 
         # Process frames in the send queue
