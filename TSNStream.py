@@ -28,7 +28,7 @@ class TSNStream:
         ######
             for node in nodes:
                 if node.type == "End Device" and node.id == self.source:
-                    print(f"Stream {self.stream_id} generated frame: {frame} at time {global_time}")
+                    # print(f"Stream {self.stream_id} generated frame: {frame} at time {global_time}")
                     node.send_frame(frame)
 
     def __repr__(self):

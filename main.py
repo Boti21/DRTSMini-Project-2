@@ -10,12 +10,15 @@ if __name__ == "__main__":
 
     test_case = func.load_test_case("test_cases/test_case_1")
 
+    routes = func.load_routes("test_cases/test_case_1/routes.json")
+
     func.validate_test_case(test_case)
 
     # print(test_case)
 
     # MAX_SIMULATION_TIME_US = 1_000_000.0 # 1 second in microseconds
-    MAX_SIMULATION_TIME_US = 1000.0
+    MAX_SIMULATION_TIME_US = 10_000.0
+    # MAX_SIMULATION_TIME_US = 1_000.0
     global_time = 0.0 # us
 
     # List to make them iterable
@@ -44,9 +47,13 @@ if __name__ == "__main__":
             source_node.ports[links[i].source_port].add_link(links[i])
             print(f"Source node: {source_node.id} | n ports: {len(source_node.ports)}")
 
+
     analizer = Analyzer()
-    analizer.wcrt_cal(route=nodes, stream=streams[0])
-    print(f"Analysis complete. WCRT: {analizer.wcrt}")
+    analizer.analyze_all(routes=routes, streams=streams)
+    print(f"Analysis complete")
+    for i, wcrt in analizer.wcrts.items():
+        print(f"WCRT for stream {i}: {wcrt}")
+
 
     while global_time < MAX_SIMULATION_TIME_US:
 
@@ -57,11 +64,22 @@ if __name__ == "__main__":
                 node.ports[port].step(1)
         for stream in streams:
             stream.step(global_time)
+        for link in links:
+            link.step(global_time)
 
 
         global_time += 1 # Advance by 1 us
         pass
 
     print("Simulation finished")
+
+    print("")
+
+    print("Worst-case response times:")
+
+    for end_device in nodes:
+        if end_device.type == "End Device":
+            for stream_id, wcrt in end_device.wcrts.items():
+                print(f"Stream {stream_id}: {wcrt} us")
 
     pass

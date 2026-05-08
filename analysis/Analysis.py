@@ -7,27 +7,33 @@
     FLOW = STREAM (kill me]
 """
 
+from numpy import double
 from CBSPort import *
 from TSNStream import *
 from Node import *
 from Link import *
 from parser import *
+from lookup_tables import *
 
 class Analyzer:
     def __init__(self):
-        self.wcrt = 0
+        self.wcrts = {}
 
-    def wcrt_cal(self, route: list[Node], stream: TSNStream):
-        for node in route:
-            for _, port in node.ports.items():
-                if port.port_id == 0 or port.link == None: # Only receiving or port link does not exist
-                    continue
-                self.wcrt += self.spi_calc(port, stream) + \
-                             self.hpi_calc(port, stream) + \
-                             self.lpi_calc(port, stream) + \
-                             port.link.delay * stream.size_bytes/port.link.bandwidth_mbps
-                             # port.link.delay # göh?
-        return self.wcrt
+    def analyze_all(self, routes: dict[int, RouteDataclass], streams: list[TSNStream]):
+        for stream in streams:
+            self.wcrts[stream.stream_id] = self.wcrt_cal(route=routes[stream.stream_id], stream=stream)
+
+    def wcrt_cal(self, route: RouteDataclass, stream: TSNStream):
+        wcrt = 0
+        for path in route.paths: # We only have one path for now
+            for node in path:
+                port = get_node(node.node).ports[node.port]
+                wcrt += self.spi_calc(port, stream) + \
+                            self.hpi_calc(port, stream) + \
+                            self.lpi_calc(port, stream) + \
+                            port.link.delay * stream.size_bytes/port.link.bandwidth_mbps
+                            # port.link.delay # göh?
+        return wcrt
 
     def spi_calc(self, port: TSNEgressPort, stream: TSNStream): # Same priority interference
         queue = Node
@@ -49,19 +55,28 @@ class Analyzer:
 
 
     def hpi_calc(self, port: TSNEgressPort, stream: TSNStream): # Higher priority interference
-        # if stream.pcp == 1: # AVB class A
-        #     return 0
-        if stream.pcp == 2: # AVB class B
-            # return self.lpi_calc(port=port, stream=stream) * port.idle_slope/port.send_slope + port.link.delay*(len(port.queues["A"]) - 1)
+        if stream.pcp == 1: # AVB class B
             queue = port.queues["A"]
             return self.lpi_calc(port=port, stream=stream) * queue.idle_slope/queue.send_slope + self.max_transmission_time(port=port, queue=queue, ignore_id=stream.stream_id)
-        return 0 # Best Effort queue not taken into account
+        elif stream.pcp == 0: # BE
+            queue = port.queues["B"]
+            hpi = self.lpi_calc(port=port, stream=stream) * queue.idle_slope/queue.send_slope + self.max_transmission_time(port=port, queue=queue, ignore_id=stream.stream_id)
+            queue = port.queues["A"]
+            hpi += self.lpi_calc(port=port, stream=stream) * queue.idle_slope/queue.send_slope + self.max_transmission_time(port=port, queue=queue, ignore_id=stream.stream_id)
+            return hpi
+        return 0 # If PCP is 2 then there's no higher priority interference
 
     def lpi_calc(self, port, stream): # Lower priority interference
-        if stream.pcp == 1:
+        if stream.pcp == 2: # AVB class A
             queue = port.queues["B"]
+            lpi = self.max_transmission_time(port=port, queue=queue, ignore_id=stream.stream_id)
+            queue = port.queues["BE"]
+            lpi += self.max_transmission_time(port=port, queue=queue, ignore_id=stream.stream_id)
+            return lpi
+        elif stream.pcp == 1: # AVB class B
+            queue = port.queues["BE"]
             return self.max_transmission_time(port=port, queue=queue, ignore_id=stream.stream_id)
-        return 0 # Best Effort queue not taken into account
+        return 0 # If PCP is 0 then there's no lower priority interference
 
     def max_transmission_time(self, port: TSNEgressPort, queue: CBSQueue, ignore_id: int):
         max = 0

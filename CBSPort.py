@@ -148,7 +148,7 @@ class TSNEgressPort:
         if finished_frame:
             if self.link:
                 self.link.receive_frame(finished_frame)
-                print(f"Finished frame transmitted through link: {finished_frame}")
+                # print(f"Finished frame transmitted through link: {finished_frame}")
             else:
                 # Visualization mode (no link attached)
                 pass

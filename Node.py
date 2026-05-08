@@ -58,14 +58,12 @@ class Switch(Node):
         # Implement switch logic to process frames and update state
         self.current_time = global_time
         for egress_port_id, frame, arrival_time in self.receive_queue:
-            print(f"Switch {self.id} received frame: {frame} at time {global_time}")
+            # print(f"Switch {self.id} received frame: {frame} at time {global_time}")
             if (
                 not (self.add_delay_to_wcrt)
                 or self.current_time - arrival_time >= self.delay
             ):
-                print(
-                    f"Switch {self.id} processing frame: {frame} at time {global_time}"
-                )
+                # print( f"Switch {self.id} processing frame: {frame} at time {global_time}")
                 self.ports[egress_port_id].receive_frame(frame, global_time)
                 self.receive_queue.remove((egress_port_id, frame, arrival_time))
 
@@ -85,6 +83,9 @@ class EndDevice(Node):
         self.type = NodeType.END_DEVICE
         # self.send_queue = list[tuple[TSNFrame, float]]  # Queue of frames to send
         self.send_queue: list[tuple[TSNFrame, float]] = []  # Queue of frames to send
+        self.wcrts: dict[int, float] = (
+            {}
+        )  # Worst-case response times for each stream ID
 
     def send_frame(self, frame: TSNFrame):
         self.send_queue.append((frame, self.current_time))
@@ -95,7 +96,9 @@ class EndDevice(Node):
         self.current_time = global_time
         for egress_port_id, frame, arrival_time in self.receive_queue:
             print(f"End Device {self.id} received frame: {frame} at time {global_time}")
-            self.wcrts[frame.stream.id] = max(self.wcrts.get(frame.stream.id, 0), global_time - arrival_time)
+            self.wcrts[frame.stream_id] = max(
+                self.wcrts.get(frame.stream_id, 0), global_time - frame.arrival_time
+            )
         self.receive_queue.clear()
 
         # Process frames in the send queue
@@ -104,9 +107,7 @@ class EndDevice(Node):
                 not (self.add_delay_to_wcrt)
                 or self.current_time - arrival_time >= self.delay
             ):
-                print(
-                    f"End Device {self.id} sending frame: {frame} at time {global_time}"
-                )
+                # print( f"End Device {self.id} sending frame: {frame} at time {global_time}")
                 self.ports[0].receive_frame(
                     frame, global_time
                 )  # Assuming port 0 is used for sending
