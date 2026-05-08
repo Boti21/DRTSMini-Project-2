@@ -85,6 +85,7 @@ class EndDevice(Node):
         self.type = NodeType.END_DEVICE
         # self.send_queue = list[tuple[TSNFrame, float]]  # Queue of frames to send
         self.send_queue: list[tuple[TSNFrame, float]] = []  # Queue of frames to send
+        self.wcrts: dict[int, float] = {}  # Worst-case response times for each stream ID   
 
     def send_frame(self, frame: TSNFrame):
         self.send_queue.append((frame, self.current_time))
@@ -95,7 +96,7 @@ class EndDevice(Node):
         self.current_time = global_time
         for egress_port_id, frame, arrival_time in self.receive_queue:
             print(f"End Device {self.id} received frame: {frame} at time {global_time}")
-            self.wcrts[frame.stream.id] = global_time - arrival_time
+            self.wcrts[frame.stream_id] = arrival_time - frame.arrival_time
         self.receive_queue.clear()
 
         # Process frames in the send queue
