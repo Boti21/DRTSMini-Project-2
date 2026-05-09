@@ -58,7 +58,8 @@ class Analyzer:
         elif stream.pcp == 2:
             queue = port.queues["B"]
         else:
-            queue = port.queues["BE"]
+            return 0
+            # queue = port.queues["BE"]
 
         if queue.idle_slope == 0: # Avoid division by zero
             return 0
@@ -84,22 +85,22 @@ class Analyzer:
             credit_recovery = (abs(queue.send_slope) / queue.idle_slope) * L_max
             return credit_recovery + L_max
 
-        elif stream.pcp == 0: # BE
-            hpi = 0
-            for key in ["A", "B"]:
-                queue = port.queues[key]
-                L_max = self.max_transmission_time(port=port, node=node, ignore_id=stream.stream_id)
-                credit_recovery = (abs(queue.send_slope) / queue.idle_slope) * L_max
-                hpi += credit_recovery + L_max
-            return hpi
+        # elif stream.pcp == 0: # BE
+        #     hpi = 0
+        #     for key in ["A", "B"]:
+        #         queue = port.queues[key]
+        #         L_max = self.max_transmission_time(port=port, node=node, ignore_id=stream.stream_id)
+        #         credit_recovery = (abs(queue.send_slope) / queue.idle_slope) * L_max
+        #         hpi += credit_recovery + L_max
+        #     return hpi
         return 0 # If PCP is 2 then there's no higher priority interference
 
     def lpi_calc(self, port: TSNEgressPort, stream: TSNStream, node: str): # Lower priority interference
         if stream.pcp == 2: # AVB class A
-            return (self.max_transmission_time(port=port, node=node, ignore_id=stream.stream_id, pcp=1) +
-                    self.max_transmission_time(port=port, node=node, ignore_id=stream.stream_id, pcp=0))
-        elif stream.pcp == 1: # AVB class B
-            return self.max_transmission_time(port=port, node=node, ignore_id=stream.stream_id)
+            return (self.max_transmission_time(port=port, node=node, ignore_id=stream.stream_id, pcp=1))
+                    # self.max_transmission_time(port=port, node=node, ignore_id=stream.stream_id, pcp=0))
+        # elif stream.pcp == 1: # AVB class B
+        #     return self.max_transmission_time(port=port, node=node, ignore_id=stream.stream_id)
         return 0 # If PCP is 0 then there's no lower priority interference
 
     def max_transmission_time(self, port: TSNEgressPort, node: str, ignore_id: int, pcp: int=None):
