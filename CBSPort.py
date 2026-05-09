@@ -89,6 +89,7 @@ class TSNEgressPort:
         """
         # print(f"Port {self.port_id} stepping")
         finished_frame = None
+        finished_queue_key = None
 
         # 1. Update Link Progress
         if self.is_busy:
@@ -100,7 +101,8 @@ class TSNEgressPort:
 
             if self.remaining_trans_time <= 0:
                 finished_frame = self.current_frame
-                self.queues[self.active_queue_key].is_transmitting = False
+                finished_queue_key = self.active_queue_key
+                self.queues[finished_queue_key].is_transmitting = False
                 self.is_busy = False
                 self.current_frame = None
                 self.active_queue_key = None
@@ -108,6 +110,9 @@ class TSNEgressPort:
         # 2. Update Credits for Waiting Queues
         for key in ["A", "B"]:
             q = self.queues[key]
+            if key == finished_queue_key:
+                continue
+
             if not q.is_transmitting:
                 if q.has_frames():
                     # Waiting for high priority or credit recovery
