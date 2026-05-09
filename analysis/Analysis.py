@@ -34,20 +34,14 @@ class Analyzer:
                 actual_node = get_node(node.node)
                 port = actual_node.ports[node.port]
                 serialization_delay = stream.size_bytes*8 / (port.link.bandwidth_mbps * 1e6) * 1e6
-                propagation_delay = port.link.delay
+                # propagation_delay = port.link.delay
+                propagation_delay = 0 # "Academic papers usually assume no propgation delay"
 
                 spi = self.spi_calc(port, stream, node.node)
                 hpi = self.hpi_calc(port, stream, node.node)
                 lpi = self.lpi_calc(port, stream, node.node)
-                print(f"Same priority interference: {spi}")
-                print(f"Higher priority interference: {hpi}")
-                print(f"Lower priority interference: {lpi}")
+                print(f"spi = {spi:.2f}     hpi = {hpi:.2f}     lpi = {lpi:.2f}")
                 wcrt += spi + hpi + lpi + propagation_delay + serialization_delay
-                # wcrt += self.spi_calc(port, stream, node.node) + \
-                #         self.hpi_calc(port, stream, node.node) + \
-                #         self.lpi_calc(port, stream, node.node) + \
-                #         propagation_delay + \
-                #         serialization_delay
         return wcrt
 
     def spi_calc(self, port: TSNEgressPort, stream: TSNStream, node: str): # Same priority interference
@@ -92,7 +86,7 @@ class Analyzer:
 
     def lpi_calc(self, port: TSNEgressPort, stream: TSNStream, node: str): # Lower priority interference
         if stream.pcp == 2: # AVB class A
-            return self.max_transmission_time(port=port, node=node, ignore_id=stream.stream_id, pcp=1)
+            return self.max_transmission_time(port=port, node=node, ignore_id=stream.stream_id)
         if stream.pcp == 1: # AVB class B
             return self.max_transmission_time(port=port, node=node, ignore_id=stream.stream_id, pcp=0)
         return 0 # If PCP is 0 then there's no lower priority interference
