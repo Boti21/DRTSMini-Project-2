@@ -20,6 +20,8 @@ class Analyzer:
         self.wcrts = {}
 
     def analyze_all(self, routes: dict[int, RouteDataclass], streams: list[TSNStream]):
+        self.streams = streams
+        self.routes = routes
         for stream in streams:
             self.wcrts[stream.stream_id] = self.wcrt_cal(route=routes[stream.stream_id], stream=stream)
 
@@ -30,15 +32,15 @@ class Analyzer:
                 port = get_node(node.node).ports[node.port]
                 serialization_delay = stream.size_bytes*8 / (port.link.bandwidth_mbps * 1e6) * 1e6 # μs
                 propagation_delay = port.link.delay
-                wcrt += self.spi_calc(port, stream) + \
-                        self.hpi_calc(port, stream) + \
-                        self.lpi_calc(port, stream) + \
+                wcrt += self.spi_calc(port, stream, node.node) + \
+                        self.hpi_calc(port, stream, node.node) + \
+                        self.lpi_calc(port, stream, node.node) + \
                         propagation_delay + \
                         serialization_delay
         return wcrt
 
-    def spi_calc(self, port: TSNEgressPort, stream: TSNStream): # Same priority interference
-        queue = Node
+    def spi_calc(self, port: TSNEgressPort, stream: TSNStream, node: str): # Same priority interference
+        queue = None
         spi = 0
         if stream.pcp == 1:
             queue = port.queues["A"]
@@ -47,16 +49,29 @@ class Analyzer:
         else:
             queue = port.queues["BE"]
 
-        for frame in queue.buffer:
-            if frame.stream_id == stream.stream_id: continue
-            spi += frame.size_bytes*8/port.link.bandwidth_mbps * (1 + abs(queue.send_slope)/queue.idle_slope)
+        print(f"Queue found: {queue.idle_slope}")
+
+        if queue.idle_slope == 0: # Avoid division by zero
+            return 0
+
+        streams_on_port = self._get_streams_on_port(port=port, node=node)
+
+        for s in streams_on_port:
+            if s.stream_id == stream.stream_id: continue
+            if s.pcp != stream.pcp: continue
+            frame_tx_time = s.size_bytes*8 / (port.link.bandwidth_mbps*1e6) * 1e6 # Only one frame per stream so max frame size = frame size
+            spi += frame_tx_time * (1 + abs(queue.send_slope) / queue.idle_slope)
+
+        # for frame in queue.buffer:
+        #     if frame.stream_id == stream.stream_id: continue
+        #     spi += frame.size_bytes*8/port.link.bandwidth_mbps * (1 + abs(queue.send_slope)/queue.idle_slope)
 
         return spi
 
-    def hpi_calc(self, port: TSNEgressPort, stream: TSNStream): # Higher priority interference
+    def hpi_calc(self, port: TSNEgressPort, stream: TSNStream, node: str): # Higher priority interference
         if stream.pcp == 1: # AVB class B
             queue = port.queues["A"]
-            L_max = self.max_transmission_time(port=port, queue=queue, ignore_id=stream.stream_id)
+            L_max = self.max_transmission_time(port=port, node=node, ignore_id=stream.stream_id)
             credit_recovery = (abs(queue.send_slope) / queue.idle_slope) * L_max
             return credit_recovery + L_max
 
@@ -64,28 +79,37 @@ class Analyzer:
             hpi = 0
             for key in ["A", "B"]:
                 queue = port.queues[key]
-                L_max = self.max_transmission_time(port=port, queue=queue, ignore_id=stream.stream_id)
+                L_max = self.max_transmission_time(port=port, node=node, ignore_id=stream.stream_id)
                 credit_recovery = (abs(queue.send_slope) / queue.idle_slope) * L_max
                 hpi += credit_recovery + L_max
             return hpi
         return 0 # If PCP is 2 then there's no higher priority interference
 
-    def lpi_calc(self, port, stream): # Lower priority interference
+    def lpi_calc(self, port: TSNEgressPort, stream: TSNStream, node: str): # Lower priority interference
         if stream.pcp == 2: # AVB class A
-            queue = port.queues["B"]
-            lpi = self.max_transmission_time(port=port, queue=queue, ignore_id=stream.stream_id)
-            queue = port.queues["BE"]
-            lpi += self.max_transmission_time(port=port, queue=queue, ignore_id=stream.stream_id)
-            return lpi
+            return (self.max_transmission_time(port=port, node=node, ignore_id=stream.stream_id, pcp=1) +
+                    self.max_transmission_time(port=port, node=node, ignore_id=stream.stream_id, pcp=0))
         elif stream.pcp == 1: # AVB class B
-            queue = port.queues["BE"]
-            return self.max_transmission_time(port=port, queue=queue, ignore_id=stream.stream_id)
+            return self.max_transmission_time(port=port, node=node, ignore_id=stream.stream_id)
         return 0 # If PCP is 0 then there's no lower priority interference
 
-    def max_transmission_time(self, port: TSNEgressPort, queue: CBSQueue, ignore_id: int):
+    def max_transmission_time(self, port: TSNEgressPort, node: str, ignore_id: int, pcp: int=None):
         max = 0
-        for frame in queue.buffer:
-            if frame.stream_id == ignore_id: continue
-            val = port.link.delay*frame.size_bytes*8/(port.link.bandwidth_mbps*1e6) * 1e6 # μs
+        streams_on_port = self._get_streams_on_port(port=port, node=node)
+
+        for s in streams_on_port:
+            if s.stream_id == ignore_id: continue
+            if pcp is not None and s.pcp != pcp: continue
+            val = s.size_bytes*8/(port.link.bandwidth_mbps*1e6) * 1e6 # μs
             if val > max: max = val
         return max
+
+    def _get_streams_on_port(self, port: TSNEgressPort, node: str):
+        streams_on_port = []
+        for s in self.streams:
+            route = self.routes[s.stream_id]
+            for path in route.paths:
+                for n in path:
+                    if n.node == node and n.port == port.port_id:
+                        streams_on_port.append(s)
+        return streams_on_port
