@@ -29,7 +29,18 @@ class Analyzer:
         wcrt = 0
         for path in route.paths: # We only have one path for now
             for node in path:
-                port = get_node(node.node).ports[node.port]
+                actual_node = get_node(node.node)
+
+                # Only count interference at switch egress ports
+                if actual_node.type == "End Device":
+                    # Still add serialization + propagation for the uplink
+                    port = actual_node.ports[node.port]
+                    serialization_delay = stream.size_bytes*8 / (port.link.bandwidth_mbps * 1e6) * 1e6
+                    propagation_delay = port.link.delay
+                    wcrt += serialization_delay + propagation_delay
+                    continue  # No interference terms
+
+                port = actual_node.ports[node.port]
                 serialization_delay = stream.size_bytes*8 / (port.link.bandwidth_mbps * 1e6) * 1e6 # μs
                 propagation_delay = port.link.delay
                 wcrt += self.spi_calc(port, stream, node.node) + \
@@ -48,8 +59,6 @@ class Analyzer:
             queue = port.queues["B"]
         else:
             queue = port.queues["BE"]
-
-        print(f"Queue found: {queue.idle_slope}")
 
         if queue.idle_slope == 0: # Avoid division by zero
             return 0
