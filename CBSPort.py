@@ -42,9 +42,12 @@ class TSNEgressPort:
         bandwidth_mbps=100,
         class_a_idle_fraction=0.5,
         class_b_idle_fraction=0.5,
+        switch_name=None,
         link=None,
     ):
         self.port_id = port_id
+        self.switch_name = switch_name
+        self.label = f"{switch_name}-Port{port_id}" if switch_name is not None else f"Port{port_id}"
         self.bandwidth_bps = bandwidth_mbps * 1_000_000
 
         class_a_idle_slope_bps = class_a_idle_fraction * self.bandwidth_bps
@@ -71,6 +74,16 @@ class TSNEgressPort:
         self.current_frame = None
         self.active_queue_key = None
 
+        # Telemetry
+        self.metrics = {
+            "time": [],
+            "credit": {name: [] for name in self.queues},
+            "queue_length": {name: [] for name in self.queues},
+            "active_queue": [],
+            "gate_state": [],
+            "frame_id": [],
+        }
+
     def receive_frame(self, frame, current_time):
         """Called by the Switch/Global Sim when a frame arrives at this port."""
         # frame.arrival_time = current_time
@@ -82,10 +95,11 @@ class TSNEgressPort:
         """Associate a Link with this port for frame delivery."""
         self.link = link
 
-    def step(self, dt):
+    def step(self, dt, current_time=None):
         """
         The main simulation tick.
         dt = time increment in microseconds.
+        current_time = current global simulation time, used for telemetry.
         """
         # print(f"Port {self.port_id} stepping")
         finished_frame = None
@@ -159,6 +173,25 @@ class TSNEgressPort:
                 pass
                 # Optional debug:
                 # print(f"Finished frame (no link): {finished_frame}")
+
+        self._record_metrics(current_time=current_time, dt=dt)
+
+    def _record_metrics(self, current_time=None, dt=1.0):
+        if current_time is None:
+            if self.metrics["time"]:
+                current_time = self.metrics["time"][-1] + dt
+            else:
+                current_time = 0.0
+
+        self.metrics["time"].append(current_time)
+
+        for name, queue in self.queues.items():
+            self.metrics["queue_length"][name].append(len(queue.buffer))
+            self.metrics["credit"][name].append(getattr(queue, "credit", None))
+
+        self.metrics["active_queue"].append(self.active_queue_key or "NA")
+        self.metrics["gate_state"].append(None)
+        self.metrics["frame_id"].append(self.current_frame.instance_id if self.current_frame is not None else -1)
 
 # --- SIMULATOR EXAMPLE ---
 
