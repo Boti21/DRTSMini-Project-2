@@ -33,7 +33,7 @@ class Analyzer:
 
                 actual_node = get_node(node.node)
                 port = actual_node.ports[node.port]
-                serialization_delay = stream.size_bytes*8 / (port.link.bandwidth_mbps * 1e6) * 1e6
+                serialization_delay = stream.size_bytes*8 / port.bandwidth_bps * 1e6
                 # propagation_delay = port.link.delay
                 propagation_delay = 0 # "Academic papers usually assume no propgation delay"
 
@@ -62,7 +62,7 @@ class Analyzer:
         for s in streams_on_port:
             if s.stream_id == stream.stream_id: continue
             if s.pcp != stream.pcp: continue
-            frame_tx_time = s.size_bytes*8 / (port.link.bandwidth_mbps*1e6) * 1e6 # Only one frame per stream so max frame size = frame size
+            frame_tx_time = s.size_bytes*8 / port.bandwidth_bps * 1e6 # Only one frame per stream so max frame size = frame size
             spi += frame_tx_time * (1 + abs(queue.send_slope) / queue.idle_slope)
 
         return spi
@@ -98,7 +98,7 @@ class Analyzer:
         for s in streams_on_port:
             if s.stream_id == ignore_id: continue
             if pcp is not None and s.pcp != pcp: continue
-            val = s.size_bytes*8/(port.link.bandwidth_mbps*1e6) * 1e6 # μs
+            val = s.size_bytes*8/port.bandwidth_bps * 1e6 # μs
             if val > max: max = val
         return max
 
