@@ -7,19 +7,36 @@ from Link import Link
 from lookup_tables import get_stream, get_node, get_link, links, nodes, streams
 from analysis.Analysis import Analyzer
 
+def parse_args():
+    import argparse
+
+    parser = argparse.ArgumentParser(description="TSN Simulator")
+    parser.add_argument(
+        "--test-case",
+        type=str,
+        default="test_cases/test_case_0",
+        help="Path to the test case directory (default: test_cases/test_case_0)",
+    )
+    parser.add_argument(
+        "--max-simulation-time",
+        type=float,
+        default=1_000.0,
+        help="Maximum simulation time in microseconds (default: 1,000 us = 1 second)",
+    )
+    return parser.parse_args()
+
 if __name__ == "__main__":
 
-    test_case = func.load_test_case("test_cases/test_case_0")
+    args = parse_args()
+    test_case = func.load_test_case(args.test_case)
+    MAX_SIMULATION_TIME_US = args.max_simulation_time
 
-    routes = func.load_routes("test_cases/test_case_0/routes.json")
+    routes = func.load_routes(f"{args.test_case}/routes.json")
 
     func.validate_test_case(test_case)
 
     # print(test_case)
 
-    # MAX_SIMULATION_TIME_US = 1_000_000.0 # 1 second in microseconds
-    MAX_SIMULATION_TIME_US = 1_000.0
-    # MAX_SIMULATION_TIME_US = 1_000.0
     global_time = 0.0  # us
 
     # List to make them iterable
