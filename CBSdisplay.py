@@ -20,6 +20,30 @@ def load_json(path):
         return json.load(f)
 
 
+def load_wcrts(path):
+    if not os.path.isfile(path):
+        return {}
+
+    wcrts = {}
+    with open(path, "r", encoding="utf-8") as f:
+        for line in f:
+            line = line.strip()
+            if not line or line.startswith("#"):
+                continue
+
+            parts = line.split("\t")
+            if len(parts) < 2:
+                continue
+
+            try:
+                stream_id = int(parts[0])
+                wcrts[stream_id] = float(parts[1].replace(",", "."))
+            except ValueError:
+                continue
+
+    return wcrts
+
+
 if len(sys.argv) not in (2, 3):
     print("Usage: python CBSdisplay_v2.py test_case_X [SIM_TIME]")
     sys.exit(1)
@@ -45,6 +69,12 @@ if not os.path.isdir(test_case_dir):
 routes = load_routes(os.path.join(test_case_dir, "routes.json"))
 streams = load_streams(os.path.join(test_case_dir, "streams.json"))
 topology_json = load_json(os.path.join(test_case_dir, "topology.json"))
+reference_wcrts = load_wcrts(os.path.join(test_case_dir, "WCRTs.csv"))
+
+if reference_wcrts:
+    print("Loaded reference WCRTs from WCRTs.csv:")
+    for stream_id, wcrt in sorted(reference_wcrts.items()):
+        print(f"  Stream {stream_id}: {wcrt} µs")
 
 # =========================================================
 # COLORS (GLOBAL CONSISTENCY)
@@ -85,11 +115,12 @@ G.add_nodes_from(nodes)
 link_labels = {}
 
 for link in topology["links"]:
+    link_bandwidth = link.get("bandwidth_mbps", topology.get("default_bandwidth_mbps", 100))
     G.add_edge(
         link["source"],
         link["destination"],
         id=link["id"],
-        bandwidth=link["bandwidth_mbps"],
+        bandwidth=link_bandwidth,
         delay=link["delay"],
         source_port=link["sourcePort"],
         destination_port=link["destinationPort"],
@@ -109,9 +140,11 @@ pos = {
 # CBS PORTS
 # =========================================================
 
+default_bandwidth = topology.get("default_bandwidth_mbps", 100)
+
 switch_ports = {
-    "SW0": TSNEgressPort(port_id=2, bandwidth_mbps=1000),
-    "SW1": TSNEgressPort(port_id=6, bandwidth_mbps=100),
+    "SW0": TSNEgressPort(port_id=2, bandwidth_mbps=default_bandwidth, switch_name="SW0"),
+    "SW1": TSNEgressPort(port_id=6, bandwidth_mbps=default_bandwidth, switch_name="SW1"),
 }
 
 # =========================================================
@@ -306,10 +339,10 @@ sw1_intervals = build_intervals(
     sw1_classes
 )
 
-plot_gantt(ax_tx0, sw0_intervals, "SW0 Transmission (CBS Gantt)")
+plot_gantt(ax_tx0, sw0_intervals, "SW0 Transmission")
 ax_tx0.set_xlim(0, SIM_TIME)
 
-plot_gantt(ax_tx1, sw1_intervals, "SW1 Transmission (CBS Gantt)")
+plot_gantt(ax_tx1, sw1_intervals, "SW1 Transmission")
 ax_tx1.set_xlim(0, SIM_TIME)
 
 # =========================================================
