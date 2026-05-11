@@ -22,6 +22,7 @@ class Analyzer:
         self.streams = streams
         self.routes = routes
         for stream in streams:
+            if stream.pcp == 0: continue # Skip BE class as per instructed
             self.wcrts[stream.stream_id] = self.wcrt_cal(route=routes[stream.stream_id], stream=stream)
 
     def wcrt_cal(self, route: RouteDataclass, stream: TSNStream):
@@ -52,7 +53,7 @@ class Analyzer:
         else:
             queue = port.queues["BE"]
 
-        if queue.idle_slope == 0: # Avoid division by zero
+        if queue.idle_slope == 0: # Implies BE queue which is not considered
             return 0
 
         streams_on_port = self.__get_streams_on_port__(port=port, node=node)
@@ -69,34 +70,26 @@ class Analyzer:
     def __hpi_calc__(self, port: TSNEgressPort, stream: TSNStream, node: str): # Higher priority interference
         if stream.pcp == 1: # AVB class B
             queue = port.queues["A"]
-            L_max = self.__max_transmission_time__(port=port, node=node, ignore_id=stream.stream_id, pcp=2)
+            L_max = self.__max_transmission_time__(port=port, node=node, ignore_id=stream.stream_id, min_priority=2, max_priority=2)
             credit_recovery = (abs(queue.idle_slope / queue.send_slope)) * self.__lpi_calc__(port=port, stream=stream, node=node)
             return credit_recovery + L_max
-        if stream.pcp == 0:
-            queue = port.queues["B"]
-            L_max = self.__max_transmission_time__(port=port, node=node, ignore_id=stream.stream_id, pcp=1)
-            credit_recovery = (abs(queue.idle_slope / queue.send_slope)) * self.__lpi_calc__(port=port, stream=stream, node=node)
-            hpi = credit_recovery + L_max
-            queue = port.queues["A"]
-            L_max = self.__max_transmission_time__(port=port, node=node, ignore_id=stream.stream_id, pcp=2)
-            credit_recovery = (abs(queue.idle_slope / queue.send_slope)) * self.__lpi_calc__(port=port, stream=stream, node=node)
-            return hpi + credit_recovery + L_max
         return 0
 
     def __lpi_calc__(self, port: TSNEgressPort, stream: TSNStream, node: str): # Lower priority interference
         if stream.pcp == 2: # AVB class A
-            return self.__max_transmission_time__(port=port, node=node, ignore_id=stream.stream_id)
+            return self.__max_transmission_time__(port=port, node=node, ignore_id=stream.stream_id, min_priority=0, max_priority=1)
         if stream.pcp == 1: # AVB class B
-            return self.__max_transmission_time__(port=port, node=node, ignore_id=stream.stream_id, pcp=0)
+            return self.__max_transmission_time__(port=port, node=node, ignore_id=stream.stream_id, min_priority=0, max_priority=0)
         return 0 # If PCP is 0 then there's no lower priority interference
 
-    def __max_transmission_time__(self, port: TSNEgressPort, node: str, ignore_id: int, pcp: int=None):
+    def __max_transmission_time__(self, port: TSNEgressPort, node: str, ignore_id: int, max_priority: int=None, min_priority: int=None):
         max = 0
         streams_on_port = self.__get_streams_on_port__(port=port, node=node)
 
         for s in streams_on_port:
             if s.stream_id == ignore_id: continue
-            if pcp is not None and s.pcp != pcp: continue
+            if max_priority != None and min_priority != None:
+                if s.pcp < min_priority or s.pcp > max_priority: continue
             val = s.size_bytes*8/port.bandwidth_bps * 1e6 # μs
             if val > max: max = val
         return max
