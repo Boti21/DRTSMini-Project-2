@@ -37,8 +37,10 @@ class TSNStream:
 
 class TSNFrame:
     """Represents a single message instance (packet) in the network."""
-
+    _next_id = 0
     def __init__(self, stream: TSNStream, arrival_time: float):
+        self.instance_id = TSNFrame._next_id
+        TSNFrame._next_id += 1
         self.stream_id = stream.stream_id
         self.name = stream.name
         self.source = stream.source
