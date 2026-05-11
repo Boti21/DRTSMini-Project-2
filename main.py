@@ -7,6 +7,7 @@ from Link import Link
 from lookup_tables import get_stream, get_node, get_link, links, nodes, streams
 from analysis.Analysis import Analyzer
 
+
 def parse_args():
     import argparse
 
@@ -24,6 +25,7 @@ def parse_args():
         help="Maximum simulation time in microseconds (default: 1,000 us = 1 second)",
     )
     return parser.parse_args()
+
 
 if __name__ == "__main__":
 
@@ -73,31 +75,32 @@ if __name__ == "__main__":
     for i, wcrt in analizer.wcrts.items():
         print(f"WCRT for stream {i}: {wcrt}")
 
+    while global_time < MAX_SIMULATION_TIME_US:
+
+        # Stepping objects
+        for node in nodes:
+            node.step(global_time)
+            for port in node.ports:
+                node.ports[port].step(1)
+        permuted_streams = list(streams)
+        random.shuffle(permuted_streams)
+        for stream in permuted_streams:
+            stream.step(global_time)
+        for link in links:
+            link.step(global_time)
+
+        global_time += 1  # Advance by 1 us
+        pass
+
     wcrts = {}
-    for i in range(1000):
-        while global_time < MAX_SIMULATION_TIME_US:
+    wcrts_avg = {}
 
-            # Stepping objects
-            for node in nodes:
-                node.step(global_time)
-                for port in node.ports:
-                    node.ports[port].step(1)
-            permuted_streams = list(streams)
-            random.shuffle(permuted_streams)
-            for stream in permuted_streams:
-                stream.step(global_time)
-            for link in links:
-                link.step(global_time)
-
-            global_time += 1  # Advance by 1 us
-            pass
-
-        for end_device in nodes:
-            if end_device.type == "End Device":
-                for stream_id, wcrt in end_device.wcrts.items():
-                    if stream_id not in wcrts:
-                        wcrts[stream_id] = 0
-                    wcrts[stream_id] = max(wcrts[stream_id], wcrt)
+    for end_device in nodes:
+        if end_device.type == "End Device":
+            for stream_id, wcrt in end_device.wcrts.items():
+                wcrts[stream_id] = wcrt
+            for stream_id, wcrt in end_device.get_wcrts_avg().items():
+                wcrts_avg[stream_id] = wcrt
 
     print("Simulation finished")
 
@@ -105,7 +108,13 @@ if __name__ == "__main__":
 
     print("Worst-case response times:")
 
-    for stream_id, wcrt in wcrts.items():
+    for stream_id, wcrt in sorted(wcrts.items()):
+        print(f"Stream {stream_id}: {wcrt} us")
+
+    print("")
+
+    print("Average response times:")
+    for stream_id, wcrt in sorted(wcrts_avg.items()):
         print(f"Stream {stream_id}: {wcrt} us")
 
     pass
