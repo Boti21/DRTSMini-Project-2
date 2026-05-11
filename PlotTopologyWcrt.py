@@ -94,7 +94,7 @@ def plot_topology(ax, topology, routes, stream_colors):
                 G,
                 pos,
                 edgelist=route_edges,
-                width=3,
+                width=1.5,
                 edge_color=[color],
                 arrows=True,
                 arrowstyle="->",
